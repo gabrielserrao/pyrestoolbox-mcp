@@ -14,6 +14,7 @@
 
 [![Model Context Protocol](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
 [![Built with pyResToolbox](https://img.shields.io/badge/Built%20with-pyResToolbox-orange.svg)](https://github.com/mwburgoyne/pyResToolbox)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-yellow.svg?logo=buy-me-a-coffee)](https://buymeacoffee.com/gabrielsero)
 
 **[Quick Start](#quick-start)** • **[Features](#what-can-you-do)** • **[Examples](#example-queries-for-claude)** • **[Documentation](#architecture)** • **[Contributing](#contributing)**
 
@@ -925,5 +926,6 @@ Stars help others discover this project and motivate continued development.
 
 [![GitHub Stars](https://img.shields.io/github/stars/gabrielserrao/pyrestoolbox-mcp?style=social)](https://github.com/gabrielserrao/pyrestoolbox-mcp/stargazers)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/gabriel-serrao-seabra/)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/gabrielsero)
 
 </div>

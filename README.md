@@ -936,6 +936,10 @@ Support the development and maintenance of this project:
 
 Your support helps keep this project free and open source for the petroleum engineering community!
 
+### 📈 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=gabrielserrao/pyrestoolbox-mcp&type=Date)](https://star-history.com/#gabrielserrao/pyrestoolbox-mcp&Date)
+
 </div>
 
 ---

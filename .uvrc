@@ -1,0 +1,7 @@
+# UV Configuration
+# This file is optional - uv automatically detects pyproject.toml
+
+# Uncomment to customize UV behavior:
+# UV_INDEX_URL=https://pypi.org/simple
+# UV_PYTHON=3.11
+# UV_CACHE_DIR=~/.cache/uv

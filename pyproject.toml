@@ -1,0 +1,63 @@
+[project]
+name = "pyrestoolbox-mcp"
+version = "1.0.0"
+description = "Model Context Protocol server for pyResToolbox - AI-powered reservoir engineering calculations"
+authors = [
+    {name = "Gabriel Serrao", email = "gabriel.serrao.seabra@gmail.com"}
+]
+readme = "README.md"
+license = {text = "GPL-3.0"}
+requires-python = ">=3.10"
+keywords = ["reservoir-engineering", "pvt", "petroleum", "mcp", "ai", "fastmcp"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "fastmcp>=2.0.0",
+    "pyrestoolbox>=2.1.4",
+    "pydantic>=2.0.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/gabrielserrao/pyrestoolbox-mcp"
+Documentation = "https://github.com/gabrielserrao/pyrestoolbox-mcp#readme"
+Repository = "https://github.com/gabrielserrao/pyrestoolbox-mcp"
+"Bug Tracker" = "https://github.com/gabrielserrao/pyrestoolbox-mcp/issues"
+"Original Library" = "https://github.com/mwburgoyne/pyResToolbox"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pyrestoolbox_mcp"]
+package-dir = {"" = "src"}
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

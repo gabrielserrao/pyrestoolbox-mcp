@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # STDIO transport (default) - for local MCP client integration
+  pyrestoolbox-mcp-stdio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pyrestoolbox-mcp:latest
+    container_name: pyrestoolbox-mcp-stdio
+    restart: unless-stopped
+    environment:
+      - MCP_TRANSPORT=stdio
+      - PYTHONUNBUFFERED=1
+    # For STDIO, typically used with docker exec or programmatic access
+    stdin_open: true
+    tty: true
+    command: ["fastmcp", "run", "server.py"]
+    networks:
+      - mcp-network
+    profiles:
+      - stdio
+
+  # HTTP transport - for web-based access
+  pyrestoolbox-mcp-http:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pyrestoolbox-mcp:latest
+    container_name: pyrestoolbox-mcp-http
+    restart: unless-stopped
+    ports:
+      - "${MCP_HTTP_PORT:-8000}:8000"
+    environment:
+      - MCP_TRANSPORT=http
+      - PYTHONUNBUFFERED=1
+    command: ["fastmcp", "run", "server.py", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pyrestoolbox_mcp import mcp; print('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - http
+
+  # SSE transport - for Server-Sent Events
+  pyrestoolbox-mcp-sse:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pyrestoolbox-mcp:latest
+    container_name: pyrestoolbox-mcp-sse
+    restart: unless-stopped
+    ports:
+      - "${MCP_SSE_PORT:-8001}:8000"
+    environment:
+      - MCP_TRANSPORT=sse
+      - PYTHONUNBUFFERED=1
+    command: ["fastmcp", "run", "server.py", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pyrestoolbox_mcp import mcp; print('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - sse
+
+networks:
+  mcp-network:
+    driver: bridge
+    name: pyrestoolbox-mcp-network
+
+# Volumes for persistent data (if needed in the future)
+volumes:
+  mcp-data:
+    name: pyrestoolbox-mcp-data

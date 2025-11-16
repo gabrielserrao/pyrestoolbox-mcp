@@ -34,6 +34,20 @@ A production-ready [Model Context Protocol (MCP)](https://modelcontextprotocol.i
 
 ---
 
+<div align="center">
+
+## ☕ Support This Project
+
+If you find this project useful, consider buying me a coffee! Your support helps maintain and improve this open-source tool.
+
+<a href="https://buymeacoffee.com/gabrielsero" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+</a>
+
+</div>
+
+---
+
 ## What is This?
 
 This MCP server bridges the gap between AI assistants and petroleum engineering workflows. Instead of manually calculating reservoir properties or writing complex scripts, you can simply ask Claude:
@@ -904,11 +918,25 @@ For this MCP server:
 
 ---
 
-## Star History
+## Support & Star
 
-If you find this project useful, please consider giving it a star on GitHub! ⭐
+<div align="center">
 
-Stars help others discover this project and motivate continued development.
+### ⭐ Star This Project
+
+If you find this project useful, please give it a star on GitHub! Stars help others discover this project and motivate continued development.
+
+### ☕ Buy Me a Coffee
+
+Support the development and maintenance of this project:
+
+<a href="https://buymeacoffee.com/gabrielsero" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+</a>
+
+Your support helps keep this project free and open source for the petroleum engineering community!
+
+</div>
 
 ---
 

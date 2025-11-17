@@ -103,11 +103,23 @@ Add this to your Claude Desktop config file:
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux:** `~/.config/Claude/claude_desktop_config.json`
 
+**IMPORTANT:** Use absolute paths for both `uv` and the project directory. GUI applications like Claude Desktop don't inherit your terminal's PATH.
+
+**Find your UV path:**
+```bash
+# macOS/Linux
+which uv
+
+# Windows (PowerShell)
+Get-Command uv | Select-Object -ExpandProperty Source
+```
+
+**Configuration:**
 ```json
 {
   "mcpServers": {
     "pyrestoolbox": {
-      "command": "uv",
+      "command": "/absolute/path/to/uv",
       "args": [
         "run",
         "--directory",
@@ -121,9 +133,68 @@ Add this to your Claude Desktop config file:
 }
 ```
 
-Replace `/absolute/path/to/pyrestoolbox-mcp` with your actual installation path.
+**Common UV paths:**
+- **macOS/Linux:** `/Users/username/.local/bin/uv` or `/home/username/.local/bin/uv`
+- **Windows:** `C:\Users\username\.cargo\bin\uv.exe`
 
-**Restart Claude Desktop** and you're ready to go!
+**Example (macOS):**
+```json
+{
+  "mcpServers": {
+    "pyrestoolbox": {
+      "command": "/Users/john/.local/bin/uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/john/projects/pyrestoolbox-mcp",
+        "fastmcp",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}
+```
+
+**Example (Linux):**
+```json
+{
+  "mcpServers": {
+    "pyrestoolbox": {
+      "command": "/home/john/.local/bin/uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/john/projects/pyrestoolbox-mcp",
+        "fastmcp",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}
+```
+
+**Example (Windows):**
+```json
+{
+  "mcpServers": {
+    "pyrestoolbox": {
+      "command": "C:\\Users\\john\\.cargo\\bin\\uv.exe",
+      "args": [
+        "run",
+        "--directory",
+        "C:\\Users\\john\\projects\\pyrestoolbox-mcp",
+        "fastmcp",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}
+```
+
+**Restart Claude Desktop** completely (Quit and reopen, not just close the window) and you're ready to go!
 
 ### Your First Query
 

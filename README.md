@@ -575,15 +575,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions. Quick overview
 ### Gas Correlations
 
 **Z-Factor**
-- **DAK** - Dranchuk & Abou-Kassem (1975) - *Recommended, most accurate*
+- **DAK** - Dranchuk & Abou-Kassem (1975) - *Recommended for hydrocarbon gases*
 - **HY** - Hall & Yarborough (1973) - *Fast, good for most conditions*
-- **WYW** - Wang, Ye & Wu (2021) - *Latest, handles high pressure*
-- **BUR** - Burrows (1981) - *Special applications*
+- **WYW** - Wang, Ye & Wu (2021) - *Reasonably fast*
+- **BUR** - Burgoyne, Nielsen & Stanko (2025) - *Universal EOS-based correlation, best for high concentrations of non-hydrocarbons (CO₂, H₂S, N₂, H₂), including 100% CO₂. Only method supporting H₂. (SPE-229932-MS)*
 
 **Critical Properties**
-- **PMC** - Piper, McCain & Corredor (1993) - *Recommended*
+- **PMC** - Piper, McCain & Corredor (1993) - *Recommended for hydrocarbon gases*
 - **SUT** - Sutton (1985)
-- **BUR** - Burrows (1981)
+- **BUR** - Burgoyne, Nielsen & Stanko (2025) - *Universal correlation, best for gases with high non-hydrocarbon content (SPE-229932-MS)*
 
 **Viscosity**
 - **LGE** - Lee, Gonzalez & Eakin (1966)

@@ -33,12 +33,12 @@ CALCULATION_METHODS: Final[dict] = {
         "DAK": "Dranchuk & Abou-Kassem (1975)",
         "HY": "Hall & Yarborough (1973)",
         "WYW": "Wang, Ye & Wu (2021)",
-        "BUR": "Burrows (1981)",
+        "BUR": "Burgoyne, Nielsen & Stanko (2025) - Universal EOS-based (SPE-229932-MS)",
     },
     "critical_properties": {
         "PMC": "Piper, McCain & Corredor (1993)",
         "SUT": "Sutton (1985)",
-        "BUR": "Burrows (1981)",
+        "BUR": "Burgoyne, Nielsen & Stanko (2025) - Universal correlation (SPE-229932-MS)",
     },
     "bubble_point": {
         "STAN": "Standing (1947)",

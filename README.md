@@ -685,14 +685,24 @@ Then connect using any MCP client or HTTP client supporting the MCP protocol.
 
 ### Claude Desktop Integration
 
+**Error: "spawn uv ENOENT"**
+- This means Claude Desktop cannot find the `uv` command
+- GUI applications don't inherit your terminal's PATH
+- **Solution:** Use absolute path to `uv` in your config
+- Find UV path: `which uv` (macOS/Linux) or `Get-Command uv` (Windows)
+- Common locations:
+  - macOS/Linux: `/Users/username/.local/bin/uv` or `/home/username/.local/bin/uv`
+  - Windows: `C:\Users\username\.cargo\bin\uv.exe`
+
 **Claude doesn't see the tools**
-1. Verify absolute path in config (no `~`, use full path)
-2. Completely restart Claude Desktop (Quit, not just close window)
-3. Check Claude Desktop logs:
+1. Use **absolute paths** for both `uv` command and project directory (no `~`, use full path)
+2. Verify paths are correct: `ls /path/to/uv` and `ls /path/to/pyrestoolbox-mcp`
+3. Completely restart Claude Desktop (Quit, not just close window)
+4. Check Claude Desktop logs:
    - macOS: `~/Library/Logs/Claude/`
    - Windows: `%APPDATA%\Claude\logs\`
-4. Test server manually: `make uv-server`
-5. Ensure UV is in PATH (try `which uv` or `where uv`)
+   - Linux: `~/.config/Claude/logs/`
+5. Test server manually: `cd /path/to/pyrestoolbox-mcp && make uv-server`
 
 **Tools fail with errors**
 - Verify all inputs use Field Units (psia, °F, ft, mD)

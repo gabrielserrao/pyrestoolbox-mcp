@@ -72,3 +72,14 @@ Thumbs.db
 .python-version
 
 .claude/
+
+# LaTeX auxiliary files (keep PDF and TEX only)
+guide/*.aux
+guide/*.log
+guide/*.out
+guide/*.toc
+guide/*.fdb_latexmk
+guide/*.fls
+guide/*.synctex.gz
+guide/*.bbl
+guide/*.blg

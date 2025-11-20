@@ -1,0 +1,1774 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{mathtools}
+
+% Page geometry
+\geometry{
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textit{pyResToolbox MCP}}
+\fancyhead[R]{\textit{Formula Reference Guide}}
+\fancyfoot[C]{\thepage}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={pyResToolbox MCP Formula Reference},
+    pdfauthor={Gabriel Serrao},
+}
+
+% Custom colors
+\definecolor{sectioncolor}{RGB}{0,102,204}
+\definecolor{subsectioncolor}{RGB}{51,153,255}
+\definecolor{formulabox}{RGB}{245,245,250}
+
+% Custom commands
+\newcommand{\unit}[1]{\ensuremath{\,\text{#1}}}
+\newcommand{\sym}[2]{\textbf{#1} & #2 \\}
+\newcommand{\symitem}[2]{\item \textbf{#1}: #2}
+
+% Title information
+\title{
+    \vspace{-2cm}
+    \Huge\textbf{pyResToolbox MCP} \\
+    \LARGE Formula Reference Guide \\
+    \vspace{0.5cm}
+    \large Quick Reference for Reservoir Engineering Calculations
+}
+\author{Gabriel Serrão Seabra}
+\date{\today \\ \vspace{0.5cm} Version 1.0}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides a comprehensive reference guide for all calculation tools available in the pyResToolbox Model Context Protocol (MCP) server. It includes mathematical formulas, symbol definitions, unit systems, and correlation methods for 47 production-ready tools covering oil PVT, gas PVT, well performance, simulation support, brine properties, and reservoir heterogeneity analysis. All calculations use Field Units (US Oilfield standard).
+
+\vspace{0.5cm}
+
+\textbf{Based on pyResToolbox:} This MCP server is built upon the excellent \textit{pyResToolbox} library by Mark W. Burgoyne (\url{https://github.com/mwburgoyne/pyResToolbox}), which provides the underlying reservoir engineering calculations.
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=\textbf{DISCLAIMER}]
+\textbf{No Warranty:} This document and the formulas contained herein are provided "AS IS" without warranty of any kind, either expressed or implied. While every effort has been made to ensure accuracy, all formulas, correlations, and calculations \textbf{MUST be independently verified} before use in any engineering or commercial application.
+
+\textbf{Professional Responsibility:} Users are solely responsible for verifying the correctness and applicability of any formula, correlation, or calculation method presented in this document. The author and contributors assume no liability for errors, omissions, or consequences arising from the use of this information.
+
+\textbf{Verification Required:} Always cross-reference formulas with original published sources and validate results against known benchmarks before applying to real reservoir engineering problems.
+\end{tcolorbox}
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Introduction}
+%=============================================================================
+
+\subsection{About pyResToolbox MCP}
+pyResToolbox MCP is a Model Context Protocol server that provides AI agents like Claude with access to industry-standard petroleum engineering calculations. Built on the comprehensive pyResToolbox library by Mark Burgoyne, it offers 47 production-ready tools for reservoir engineering workflows.
+
+\subsection{Unit System}
+\textbf{All calculations use Field Units (US Oilfield standard):}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Property} & \textbf{Unit} & \textbf{Example} \\
+\midrule
+Pressure & psia & 3000 psia \\
+Temperature & °F & 180°F \\
+Permeability & mD & 100 mD \\
+Pay Thickness & ft & 50 ft \\
+Viscosity & cP & 0.85 cP \\
+Oil Rate & STB/day & 542 STB/day \\
+Gas Rate & MSCF/day & 1250 MSCF/day \\
+Oil Gravity & API° or SG & 35° API \\
+Gas Gravity & SG (air=1) & 0.75 \\
+Solution GOR & scf/stb & 800 scf/stb \\
+Oil FVF & rb/stb & 1.25 rb/stb \\
+Gas FVF & rcf/scf & 0.0045 rcf/scf \\
+Compressibility & 1/psi & $1.2 \times 10^{-5}$ 1/psi \\
+Density & lb/ft³ & 42.5 lb/ft³ \\
+\bottomrule
+\end{tabular}
+\caption{Field Units Used in All Calculations}
+\end{table}
+
+\newpage
+
+%=============================================================================
+\section{Oil PVT Calculations}
+%=============================================================================
+
+\subsection{Bubble Point Pressure ($P_b$)}
+
+\subsubsection{Description}
+The bubble point pressure is the pressure at which the first gas bubble evolves from solution oil. It is a critical PVT property that defines the boundary between undersaturated (single-phase) and saturated (two-phase) oil behavior.
+
+\subsubsection{Available Methods}
+
+\textbf{1. Standing (1947) - STAN}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+P_b = 18.2 \left[ \left( \frac{R_{sb}}{\gamma_g} \right)^{0.83} \times 10^{a} - 1.4 \right]
+\end{equation}
+where:
+\begin{equation}
+a = 0.00091 \times T - 0.0125 \times \text{API}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$P_b$}{Bubble point pressure (psia)}
+\symitem{$R_{sb}$}{Solution GOR at bubble point (scf/stb)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$\text{API}$}{Oil API gravity (degrees)}
+\end{itemize}
+
+\textbf{2. Valko-McCain (2003) - VALMC}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+P_b = -C_1 - C_2 \times A - C_3 \times A^2
+\end{equation}
+where:
+\begin{align}
+A &= \ln \left( \frac{R_{sb}}{\gamma_{sp}} \right) \\
+C_1 &= 7.916 \times 10^{-4} \times \text{API}^{1.541} - 4.561 \times 10^{-5} \times T^{1.3911} \\
+C_2 &= 4.51 \times 10^{-5} \times \text{API}^{1.3911} \times T^{0.7849} \\
+C_3 &= 1.046 \times 10^{-7} \times \text{API}^{1.3911} \times T^{1.007}
+\end{align}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\gamma_{sp}$}{Separator gas specific gravity (air=1)}
+\symitem{$C_1, C_2, C_3$}{Correlation coefficients}
+\end{itemize}
+
+\textbf{3. Velarde-Blasingame-McCain (1997) - VELAR}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\ln(P_b) = a_0 + a_1 \ln(R_{sb}) + a_2 [\ln(R_{sb})]^2 + a_3 \ln(\gamma_{sp}) + a_4 \ln(\text{API}) + a_5 \ln(T+460)
+\end{equation}
+\end{tcolorbox}
+
+Coefficients $a_0$ through $a_5$ are empirically determined from regression analysis.
+
+\subsection{Solution Gas-Oil Ratio ($R_s$)}
+
+\subsubsection{Description}
+The solution gas-oil ratio represents the volume of gas dissolved in oil at a given pressure and temperature. It increases with pressure up to the bubble point, then remains constant (equal to $R_{sb}$) above the bubble point.
+
+\subsubsection{Standing (1947) Method}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+R_s = \gamma_g \left[ \frac{P}{18.2} + 1.4 \right] \times 10^{-a}
+\end{equation}
+where:
+\begin{equation}
+a = 0.0125 \times \text{API} - 0.00091 \times T
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$R_s$}{Solution gas-oil ratio (scf/stb)}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$\text{API}$}{Oil API gravity (degrees)}
+\symitem{$T$}{Temperature (°F)}
+\end{itemize}
+
+\textbf{Behavior:}
+\begin{itemize}
+\item $P < P_b$: $R_s$ calculated from correlation
+\item $P \geq P_b$: $R_s = R_{sb}$ (constant)
+\end{itemize}
+
+\subsection{Oil Formation Volume Factor ($B_o$)}
+
+\subsubsection{Description}
+The formation volume factor relates the volume of oil at reservoir conditions to its volume at stock tank conditions. It accounts for thermal expansion and gas in solution.
+
+\subsubsection{McCain et al. (1988) Method - MCAIN}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+B_o = \frac{\rho_{ST}}{\rho_o}
+\end{equation}
+where oil density $\rho_o$ is calculated from:
+\begin{equation}
+\rho_o = \frac{\rho_{ST} + 0.01357 \times R_s \times \gamma_g}{0.972 + 0.000147 \times (T+460)^{1.175}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$B_o$}{Oil formation volume factor (rb/stb)}
+\symitem{$\rho_o$}{Oil density at reservoir conditions (lb/ft³)}
+\symitem{$\rho_{ST}$}{Oil density at stock tank conditions (lb/ft³)}
+\symitem{$R_s$}{Solution gas-oil ratio (scf/stb)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$T$}{Temperature (°F)}
+\end{itemize}
+
+\subsubsection{Standing (1947) Method - STAN}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+B_o = 0.9759 + 0.00012 \left[ R_s \sqrt{\frac{\gamma_g}{\gamma_o}} + 1.25 T \right]^{1.2}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\gamma_o$}{Oil specific gravity (water=1)}
+\end{itemize}
+
+\subsection{Oil Viscosity ($\mu_o$)}
+
+\subsubsection{Description}
+Oil viscosity is a measure of the oil's resistance to flow. It decreases with increasing temperature and decreasing pressure (above bubble point).
+
+\subsubsection{Beggs-Robinson (1975) Method - BR}
+
+\textbf{Dead Oil Viscosity:}
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\mu_{od} = 10^X - 1
+\end{equation}
+where:
+\begin{equation}
+X = T^{-1.163} \times \exp(6.9824 - 0.04658 \times \text{API})
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Live Oil Viscosity:}
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\mu_o = A \times \mu_{od}^B
+\end{equation}
+where:
+\begin{align}
+A &= 10.715 \times (R_s + 100)^{-0.515} \\
+B &= 5.44 \times (R_s + 150)^{-0.338}
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\mu_o$}{Oil viscosity (cP)}
+\symitem{$\mu_{od}$}{Dead oil viscosity (cP)}
+\symitem{$R_s$}{Solution gas-oil ratio (scf/stb)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$\text{API}$}{Oil API gravity (degrees)}
+\end{itemize}
+
+\subsection{Oil Density ($\rho_o$)}
+
+\subsubsection{Description}
+Oil density at reservoir conditions accounts for dissolved gas and thermal expansion effects.
+
+\subsubsection{Standing-White-McCain-Hill (1995) Method - SWMH}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\rho_o = \frac{62.4 \times \gamma_o + 0.0136 \times R_s \times \gamma_g}{B_o}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\rho_o$}{Oil density (lb/ft³)}
+\symitem{$\gamma_o$}{Oil specific gravity (water=1)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$R_s$}{Solution gas-oil ratio (scf/stb)}
+\symitem{$B_o$}{Oil formation volume factor (rb/stb)}
+\end{itemize}
+
+\subsection{Oil Compressibility ($c_o$)}
+
+\subsubsection{Description}
+Oil compressibility describes the fractional change in oil volume with pressure. It is critical for material balance calculations and pressure transient analysis.
+
+\subsubsection{Explicit Method - EXPLT}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+c_o = -\frac{1}{B_o} \left[ \frac{dB_o}{dP} - \frac{B_g}{5.61458} \frac{dR_s}{dP} \right]
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$c_o$}{Oil compressibility (1/psi)}
+\symitem{$B_o$}{Oil formation volume factor (rb/stb)}
+\symitem{$B_g$}{Gas formation volume factor (rcf/scf)}
+\symitem{$R_s$}{Solution gas-oil ratio (scf/stb)}
+\symitem{$P$}{Pressure (psia)}
+\end{itemize}
+
+\textbf{Note:} Derivatives are calculated numerically using finite differences.
+
+\subsection{API-Specific Gravity Conversions}
+
+\subsubsection{API to Specific Gravity}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\gamma_o = \frac{141.5}{\text{API} + 131.5}
+\end{equation}
+\end{tcolorbox}
+
+\subsubsection{Specific Gravity to API}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\text{API} = \frac{141.5}{\gamma_o} - 131.5
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\text{API}$}{Oil API gravity (degrees)}
+\symitem{$\gamma_o$}{Oil specific gravity (water=1)}
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Gas PVT Calculations}
+%=============================================================================
+
+\subsection{Gas Z-Factor (Compressibility Factor)}
+
+\subsubsection{Description}
+The Z-factor corrects the ideal gas law for real gas behavior. It is defined as:
+\begin{equation}
+PV = ZnRT
+\end{equation}
+where Z = 1 for ideal gas, Z < 1 for most real gases at reservoir conditions.
+
+\subsubsection{Dranchuk-Abou-Kassem (1975) Method - DAK}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{align}
+Z &= 1 + A_1 \rho_r + A_2 \rho_r^2 + A_3 \rho_r^5 + A_4 \rho_r^2 (1 + A_5 \rho_r^2) \exp(-A_5 \rho_r^2) \\
+&\quad + \frac{A_6 + A_7 \rho_r + A_8 \rho_r^2}{T_{pr}^3} \rho_r^2
+\end{align}
+
+where reduced density $\rho_r$ is solved iteratively from:
+\begin{equation}
+\rho_r = \frac{0.27 P_{pr}}{Z T_{pr}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$Z$}{Gas compressibility factor (dimensionless)}
+\symitem{$\rho_r$}{Reduced density (dimensionless)}
+\symitem{$P_{pr}$}{Pseudo-reduced pressure = $P/P_c$}
+\symitem{$T_{pr}$}{Pseudo-reduced temperature = $(T+460)/T_c$}
+\symitem{$P_c$}{Pseudo-critical pressure (psia)}
+\symitem{$T_c$}{Pseudo-critical temperature (°R)}
+\symitem{$A_1, \ldots, A_8$}{Correlation constants}
+\end{itemize}
+
+\subsubsection{Hall-Yarborough (1973) Method - HY}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+Implicit equation for reduced density $y$:
+\begin{equation}
+\frac{0.06125 P_{pr} t}{y} \exp\left[-1.2(1-t)^2\right] = F(y)
+\end{equation}
+where:
+\begin{equation}
+F(y) = -A_1 + A_2/y + A_3/y^2 + A_4/y^3 + A_5/y^4 + y^2(A_6 + A_7/y + A_8/y^2)(1 + A_9y^2)\exp(-A_9y^2)
+\end{equation}
+
+Then Z is calculated from:
+\begin{equation}
+Z = \frac{A_1 P_{pr}}{y}
+\end{equation}
+
+where $t = 1/T_{pr}$ and $A_1, \ldots, A_9$ are correlation constants.
+\end{tcolorbox}
+
+\subsubsection{Burgoyne-Nielsen-Stanko (2025) Method - BUR}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Universal EOS-based correlation} for Z-factor, viscosity, and enthalpy. This is the most recent and comprehensive method, developed specifically to handle:
+\begin{itemize}
+\item High concentrations of non-hydrocarbons (CO$_2$, H$_2$S, N$_2$, H$_2$)
+\item Pure non-hydrocarbon streams (100\% CO$_2$, 100\% H$_2$)
+\item Hydrogen mixtures (only method supporting H$_2$)
+\item Full range of P-T conditions
+\end{itemize}
+
+Based on a tuned 5-component Peng-Robinson EOS model. Formulation details are proprietary, but the correlation is implemented in pyResToolbox for practical use.
+
+\textbf{Reference:} SPE-229932-MS (ADIPEC 2025)
+\end{tcolorbox}
+
+\textbf{Method Comparison:}
+\begin{itemize}
+\item \textbf{DAK}: Best for hydrocarbon gases with low non-HC content
+\item \textbf{HY}: Fast alternative for standard conditions
+\item \textbf{WYW}: Modern update to classical methods
+\item \textbf{BUR}: Universal method, required for H$_2$ or high non-HC content
+\end{itemize}
+
+\subsection{Pseudo-Critical Properties}
+
+\subsubsection{Description}
+Pseudo-critical properties (temperature and pressure) are used to calculate the reduced properties needed for Z-factor correlations.
+
+\subsubsection{Piper-McCain-Corredor (1993) Method - PMC}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Without Non-Hydrocarbons:}
+\begin{align}
+T_c &= 169.2 + 349.5 \gamma_g - 74.0 \gamma_g^2 \quad \text{(°R)} \\
+P_c &= 756.8 - 131.07 \gamma_g - 3.6 \gamma_g^2 \quad \text{(psia)}
+\end{align}
+
+\textbf{With CO$_2$ and H$_2$S Corrections:}
+\begin{align}
+T_c' &= T_c - \epsilon_T \\
+P_c' &= \frac{P_c - \epsilon_P}{1 - y_{CO_2} - y_{H_2S}}
+\end{align}
+where:
+\begin{align}
+\epsilon_T &= 120(y_{CO_2}^{0.9} - y_{CO_2}^{1.6}) + 15(y_{H_2S}^{0.5} - y_{H_2S}^4) \\
+\epsilon_P &= 440 y_{CO_2} + 600 y_{H_2S} - 170 y_{CO_2} y_{H_2S}
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$T_c$}{Pseudo-critical temperature (°R)}
+\symitem{$P_c$}{Pseudo-critical pressure (psia)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$y_{CO_2}$}{CO$_2$ mole fraction}
+\symitem{$y_{H_2S}$}{H$_2$S mole fraction}
+\symitem{$y_{N_2}$}{N$_2$ mole fraction}
+\symitem{$\epsilon_T$}{Temperature correction}
+\symitem{$\epsilon_P$}{Pressure correction}
+\end{itemize}
+
+\subsection{Gas Formation Volume Factor ($B_g$)}
+
+\subsubsection{Description}
+The gas formation volume factor relates gas volume at reservoir conditions to its volume at standard conditions.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+B_g = \frac{0.02827 \times Z \times (T + 460)}{P} \quad \text{(rcf/scf)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$B_g$}{Gas formation volume factor (rcf/scf)}
+\symitem{$Z$}{Gas compressibility factor (dimensionless)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$P$}{Pressure (psia)}
+\end{itemize}
+
+\subsection{Gas Viscosity ($\mu_g$)}
+
+\subsubsection{Description}
+Gas viscosity is required for flow calculations and increases with pressure and temperature.
+
+\subsubsection{Lee-Gonzalez-Eakin (1966) Method - LGE}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\mu_g = K \times 10^{-4} \times \exp\left[X \times \rho_g^Y\right]
+\end{equation}
+where:
+\begin{align}
+K &= \frac{(9.4 + 0.02 M) (T+460)^{1.5}}{209 + 19M + (T+460)} \\
+X &= 3.5 + \frac{986}{T+460} + 0.01M \\
+Y &= 2.4 - 0.2X \\
+M &= 28.97 \gamma_g
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\mu_g$}{Gas viscosity (cP)}
+\symitem{$\rho_g$}{Gas density (lb/ft³)}
+\symitem{$M$}{Gas molecular weight (lb/lbmol)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$T$}{Temperature (°F)}
+\end{itemize}
+
+\subsection{Gas Density ($\rho_g$)}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\rho_g = \frac{P \times 28.97 \times \gamma_g}{Z \times 10.73 \times (T+460)} \quad \text{(lb/ft³)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\rho_g$}{Gas density (lb/ft³)}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$\gamma_g$}{Gas specific gravity (air=1)}
+\symitem{$Z$}{Gas compressibility factor (dimensionless)}
+\symitem{$T$}{Temperature (°F)}
+\end{itemize}
+
+\subsection{Gas Compressibility ($c_g$)}
+
+\subsubsection{Description}
+Gas compressibility describes the fractional change in gas volume with pressure.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+c_g = \frac{1}{P} - \frac{1}{Z} \frac{dZ}{dP}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$c_g$}{Gas compressibility (1/psi)}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$Z$}{Gas compressibility factor (dimensionless)}
+\end{itemize}
+
+\subsection{Gas Pseudopressure ($\psi$)}
+
+\subsubsection{Description}
+Gas pseudopressure (or real gas potential) linearizes the gas diffusivity equation and is used in well test analysis.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\psi(P) = 2 \int_{P_0}^{P} \frac{P'}{\mu_g Z} dP' \quad \text{(psia²/cP)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\psi$}{Gas pseudopressure (psia²/cP)}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$P_0$}{Reference pressure (usually 0 psia)}
+\symitem{$\mu_g$}{Gas viscosity (cP)}
+\symitem{$Z$}{Gas compressibility factor (dimensionless)}
+\end{itemize}
+
+\textbf{Note:} Integral is evaluated numerically using trapezoidal rule or Simpson's rule.
+
+\newpage
+
+%=============================================================================
+\section{Inflow Performance (Well Productivity)}
+%=============================================================================
+
+\subsection{Oil Rate - Radial Flow (Vertical Wells)}
+
+\subsubsection{Description}
+Calculates oil production rate for vertical wells with radial flow geometry using Darcy's law for steady-state or pseudo-steady-state flow.
+
+\subsubsection{Darcy's Law - Undersaturated Reservoir}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+q_o = \frac{0.00708 \times k \times h \times (P_i - P_{wf})}{\mu_o \times B_o \times \left[\ln\left(\frac{r_e}{r_w}\right) - 0.75 + S\right]} \quad \text{(STB/day)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$q_o$}{Oil production rate (STB/day)}
+\symitem{$k$}{Permeability (mD)}
+\symitem{$h$}{Net pay thickness (ft)}
+\symitem{$P_i$}{Initial/reservoir pressure (psia)}
+\symitem{$P_{wf}$}{Wellbore flowing pressure (psia)}
+\symitem{$\mu_o$}{Oil viscosity (cP)}
+\symitem{$B_o$}{Oil formation volume factor (rb/stb)}
+\symitem{$r_e$}{Drainage radius (ft)}
+\symitem{$r_w$}{Wellbore radius (ft)}
+\symitem{$S$}{Skin factor (dimensionless)}
+\end{itemize}
+
+\subsubsection{Vogel IPR - Saturated Reservoir}
+
+For saturated reservoirs ($P_i < P_b$), use Vogel's correlation:
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\frac{q_o}{q_{o,max}} = 1 - 0.2 \left(\frac{P_{wf}}{P_i}\right) - 0.8 \left(\frac{P_{wf}}{P_i}\right)^2
+\end{equation}
+
+where maximum rate is:
+\begin{equation}
+q_{o,max} = q_o(P_{wf}=0)
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$q_{o,max}$}{Maximum oil rate at zero bottomhole pressure (STB/day)}
+\symitem{$P_b$}{Bubble point pressure (psia)}
+\end{itemize}
+
+\subsection{Oil Rate - Linear Flow (Horizontal Wells)}
+
+\subsubsection{Description}
+Calculates oil production rate for horizontal wells or linear flow geometry.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+q_o = \frac{0.00708 \times k \times h \times L \times (P_i - P_{wf})}{\mu_o \times B_o \times \left[\frac{r_e}{2} + S\right]} \quad \text{(STB/day)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$L$}{Horizontal well length (ft)}
+\end{itemize}
+
+\subsection{Gas Rate - Radial Flow (Vertical Wells)}
+
+\subsubsection{Description}
+Calculates gas production rate for vertical wells using pseudopressure formulation.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+q_g = \frac{0.00708 \times k \times h \times [\psi(P_i) - \psi(P_{wf})]}{\left[\ln\left(\frac{r_e}{r_w}\right) - 0.75 + S\right]} \quad \text{(MSCF/day)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$q_g$}{Gas production rate (MSCF/day)}
+\symitem{$\psi(P)$}{Gas pseudopressure (psia²/cP)}
+\symitem{$k$}{Permeability (mD)}
+\symitem{$h$}{Net pay thickness (ft)}
+\symitem{$P_i$}{Reservoir pressure (psia)}
+\symitem{$P_{wf}$}{Wellbore flowing pressure (psia)}
+\symitem{$r_e$}{Drainage radius (ft)}
+\symitem{$r_w$}{Wellbore radius (ft)}
+\symitem{$S$}{Skin factor (dimensionless)}
+\end{itemize}
+
+\subsection{Gas Rate - Linear Flow (Horizontal Wells)}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+q_g = \frac{0.00708 \times k \times h \times L \times [\psi(P_i) - \psi(P_{wf})]}{\left[\frac{r_e}{2} + S\right]} \quad \text{(MSCF/day)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$L$}{Horizontal well length (ft)}
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Relative Permeability Correlations}
+%=============================================================================
+
+\subsection{Corey (1954) Correlation}
+
+\subsubsection{Description}
+Simple power-law model for relative permeability as a function of normalized saturation.
+
+\subsubsection{Normalized Saturation}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Water Phase:}
+\begin{equation}
+S_w^* = \frac{S_w - S_{wc}}{1 - S_{wc} - S_{or}}
+\end{equation}
+
+\textbf{Oil Phase (Water-Oil):}
+\begin{equation}
+S_o^* = \frac{S_o - S_{or}}{1 - S_{wc} - S_{or}}
+\end{equation}
+
+\textbf{Gas Phase:}
+\begin{equation}
+S_g^* = \frac{S_g - S_{gc}}{1 - S_{wc} - S_{org}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$S_w^*$}{Normalized water saturation}
+\symitem{$S_o^*$}{Normalized oil saturation}
+\symitem{$S_g^*$}{Normalized gas saturation}
+\symitem{$S_w$}{Water saturation}
+\symitem{$S_o$}{Oil saturation}
+\symitem{$S_g$}{Gas saturation}
+\symitem{$S_{wc}$}{Connate water saturation}
+\symitem{$S_{or}$}{Residual oil saturation (to water)}
+\symitem{$S_{org}$}{Residual oil saturation (to gas)}
+\symitem{$S_{gc}$}{Critical gas saturation}
+\end{itemize}
+
+\subsubsection{Relative Permeability Functions}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Water Relative Permeability:}
+\begin{equation}
+k_{rw} = k_{rw}^{max} \times (S_w^*)^{n_w}
+\end{equation}
+
+\textbf{Oil Relative Permeability (to water):}
+\begin{equation}
+k_{row} = k_{row}^{max} \times (1 - S_w^*)^{n_o}
+\end{equation}
+
+\textbf{Gas Relative Permeability:}
+\begin{equation}
+k_{rg} = k_{rg}^{max} \times (S_g^*)^{n_g}
+\end{equation}
+
+\textbf{Oil Relative Permeability (to gas):}
+\begin{equation}
+k_{rog} = k_{rog}^{max} \times (1 - S_g^*)^{n_o}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Additional Symbols:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$k_{rw}$}{Water relative permeability}
+\symitem{$k_{row}$}{Oil relative permeability (to water)}
+\symitem{$k_{rg}$}{Gas relative permeability}
+\symitem{$k_{rog}$}{Oil relative permeability (to gas)}
+\symitem{$k_{rw}^{max}$}{Maximum water relative permeability}
+\symitem{$k_{row}^{max}$}{Maximum oil relative permeability}
+\symitem{$k_{rg}^{max}$}{Maximum gas relative permeability}
+\symitem{$n_w$}{Corey exponent for water}
+\symitem{$n_o$}{Corey exponent for oil}
+\symitem{$n_g$}{Corey exponent for gas}
+\end{itemize}
+
+\textbf{Typical Values:}
+\begin{itemize}
+\item $n_w$: 1.5 - 3.0
+\item $n_o$: 2.0 - 4.0
+\item $n_g$: 2.0 - 3.5
+\end{itemize}
+
+\subsection{LET Correlation (Lomeland-Ebeltoft-Thomas 2005)}
+
+\subsubsection{Description}
+Flexible three-parameter model (L, E, T) that can fit complex relative permeability curves.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Water Relative Permeability:}
+\begin{equation}
+k_{rw} = k_{rw}^{max} \times \frac{(S_w^*)^{L_w}}{(S_w^*)^{L_w} + E_w (1 - S_w^*)^{T_w}}
+\end{equation}
+
+\textbf{Oil Relative Permeability:}
+\begin{equation}
+k_{ro} = k_{ro}^{max} \times \frac{(1 - S_w^*)^{L_o}}{(1 - S_w^*)^{L_o} + E_o (S_w^*)^{T_o}}
+\end{equation}
+
+\textbf{Gas Relative Permeability:}
+\begin{equation}
+k_{rg} = k_{rg}^{max} \times \frac{(S_g^*)^{L_g}}{(S_g^*)^{L_g} + E_g (1 - S_g^*)^{T_g}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$L_w, L_o, L_g$}{Low saturation parameters (controls curve near $S^*=0$)}
+\symitem{$E_w, E_o, E_g$}{Elevation parameters (controls height/position)}
+\symitem{$T_w, T_o, T_g$}{Top saturation parameters (controls curve near $S^*=1$)}
+\end{itemize}
+
+\textbf{Typical Ranges:}
+\begin{itemize}
+\item $L$: 1.0 - 3.0
+\item $E$: 1.0 - 2.0
+\item $T$: 1.0 - 3.0
+\end{itemize}
+
+\textbf{Advantages over Corey:}
+\begin{itemize}
+\item More flexible curve shapes
+\item Better fitting to experimental data
+\item Independent control of endpoint behavior
+\item Smooth transitions
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Brine Properties}
+%=============================================================================
+
+\subsection{Brine Density ($\rho_w$)}
+
+\subsubsection{Description}
+Brine density depends on pressure, temperature, and salinity (NaCl concentration).
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Pure Water Density:}
+\begin{equation}
+\rho_{w,pure} = 62.368 + 0.438603 \times 10^{-3} P + f(T)
+\end{equation}
+
+\textbf{Brine Density with Salinity:}
+\begin{equation}
+\rho_w = \rho_{w,pure} + \Delta\rho_{salt}(w_t)
+\end{equation}
+
+where salinity correction is:
+\begin{equation}
+\Delta\rho_{salt} = w_t \times (a_0 + a_1 T + a_2 P)
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\rho_w$}{Brine density (lb/ft³)}
+\symitem{$\rho_{w,pure}$}{Pure water density (lb/ft³)}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\symitem{$a_0, a_1, a_2$}{Correlation coefficients}
+\end{itemize}
+
+\subsection{Brine Viscosity ($\mu_w$)}
+
+\subsubsection{Description}
+Brine viscosity decreases with temperature and increases with pressure and salinity.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\mu_w = \mu_{w,pure} \times [1 + A \times w_t + B \times w_t^2]
+\end{equation}
+
+where pure water viscosity is:
+\begin{equation}
+\mu_{w,pure} = a \times 10^{b/(T+c)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\mu_w$}{Brine viscosity (cP)}
+\symitem{$\mu_{w,pure}$}{Pure water viscosity (cP)}
+\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$A, B, a, b, c$}{Correlation coefficients}
+\end{itemize}
+
+\subsection{Brine Compressibility ($c_w$)}
+
+\subsubsection{Description}
+Brine compressibility is the fractional change in volume with pressure.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+c_w = \frac{1}{B_w} \frac{dB_w}{dP} \quad \text{(1/psi)}
+\end{equation}
+
+\textbf{Empirical Correlation:}
+\begin{equation}
+c_w = (c_1 + c_2 T + c_3 T^2)(1 + c_4 w_t)
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$c_w$}{Brine compressibility (1/psi)}
+\symitem{$B_w$}{Water formation volume factor (rb/stb)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\symitem{$c_1, c_2, c_3, c_4$}{Correlation coefficients}
+\end{itemize}
+
+\subsection{Brine Formation Volume Factor ($B_w$)}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+B_w = (1 + \Delta V_T)(1 + \Delta V_P)(1 + \Delta V_s)
+\end{equation}
+where:
+\begin{align}
+\Delta V_T &= -1.0001 \times 10^{-2} + 1.33391 \times 10^{-4} T + 5.50654 \times 10^{-7} T^2 \\
+\Delta V_P &= -1.95301 \times 10^{-9} P T - 1.72834 \times 10^{-13} P^2 T - 3.58922 \times 10^{-7} P \\
+\Delta V_s &= -w_t (2.65 \times 10^{-4} - 1.878 \times 10^{-6} w_t)
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$B_w$}{Water formation volume factor (rb/stb)}
+\symitem{$\Delta V_T$}{Thermal expansion effect}
+\symitem{$\Delta V_P$}{Pressure effect}
+\symitem{$\Delta V_s$}{Salinity effect}
+\symitem{$P$}{Pressure (psia)}
+\symitem{$T$}{Temperature (°F)}
+\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\end{itemize}
+
+\subsection{Gas Solubility in Brine ($R_w$)}
+
+\subsubsection{Description}
+Volume of gas (CH$_4$ or CO$_2$) dissolved in brine at reservoir conditions.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Methane Solubility:}
+\begin{equation}
+R_w = A(T,P) \times (1 - \alpha \times w_t) \quad \text{(scf/stb)}
+\end{equation}
+
+where $A(T,P)$ is calculated from Henry's Law with temperature and pressure dependence.
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$R_w$}{Gas solubility in brine (scf/stb)}
+\symitem{$A(T,P)$}{Solubility function of temperature and pressure}
+\symitem{$\alpha$}{Salinity correction factor}
+\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Reservoir Heterogeneity}
+%=============================================================================
+
+\subsection{Lorenz Coefficient}
+
+\subsubsection{Description}
+The Lorenz coefficient quantifies reservoir heterogeneity based on the cumulative flow capacity vs cumulative storage capacity curve. It ranges from 0 (homogeneous) to 1 (completely heterogeneous).
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+L = 2 \times \int_0^1 [F(\phi) - \phi] d\phi
+\end{equation}
+
+where $F(\phi)$ is the Lorenz curve:
+\begin{equation}
+F(\phi) = \frac{\text{Cumulative Flow Capacity}}{\text{Total Flow Capacity}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$L$}{Lorenz coefficient (0-1)}
+\symitem{$F(\phi)$}{Lorenz curve function}
+\symitem{$\phi$}{Cumulative storage fraction}
+\end{itemize}
+
+\textbf{Interpretation:}
+\begin{itemize}
+\item $L = 0$: Perfectly homogeneous (all layers have same $k h$)
+\item $L = 0.3$: Low heterogeneity
+\item $L = 0.5$: Moderate heterogeneity
+\item $L = 0.7$: High heterogeneity
+\item $L \rightarrow 1$: Extreme heterogeneity
+\end{itemize}
+
+\subsection{Dykstra-Parsons Coefficient ($\beta$)}
+
+\subsubsection{Description}
+The Dykstra-Parsons coefficient measures permeability variation assuming a log-normal distribution.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\begin{equation}
+\beta = \frac{k_{50} - k_{84.1}}{k_{50}}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $k_{50}$ is the median permeability (50th percentile)
+\item $k_{84.1}$ is the 84.1th percentile permeability (1 standard deviation below mean in log space)
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\beta$}{Dykstra-Parsons coefficient (0-1)}
+\symitem{$k_{50}$}{Median permeability (mD)}
+\symitem{$k_{84.1}$}{84.1th percentile permeability (mD)}
+\end{itemize}
+
+\textbf{Interpretation:}
+\begin{itemize}
+\item $\beta < 0.5$: Low variation (homogeneous)
+\item $\beta = 0.5 - 0.7$: Moderate variation
+\item $\beta > 0.7$: High variation (heterogeneous)
+\end{itemize}
+
+\subsection{Lorenz-Beta Conversion}
+
+\subsubsection{Description}
+Conversion between Lorenz coefficient and Dykstra-Parsons beta parameter, assuming log-normal permeability distribution.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Beta to Lorenz:}
+\begin{equation}
+L \approx 1 - \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} \exp\left(-\frac{x^2}{2}\right) \times \exp(x \sigma) dx
+\end{equation}
+
+where $\sigma$ is related to $\beta$ through:
+\begin{equation}
+\beta = 1 - \exp(-\sigma)
+\end{equation}
+
+\textbf{Approximate Conversion:}
+\begin{equation}
+L \approx 0.632 \times \beta^{0.9}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$L$}{Lorenz coefficient}
+\symitem{$\beta$}{Dykstra-Parsons coefficient}
+\symitem{$\sigma$}{Standard deviation of $\ln(k)$}
+\end{itemize}
+
+\subsection{Layer Permeability Distribution}
+
+\subsubsection{Description}
+Generates permeability distribution for layered reservoirs based on Lorenz coefficient.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Log-Normal Distribution:}
+\begin{equation}
+k_i = k_{avg} \times \exp\left[\sigma \times \Phi^{-1}(p_i) - \frac{\sigma^2}{2}\right]
+\end{equation}
+
+where:
+\begin{itemize}
+\item $k_i$ is permeability of layer $i$
+\item $k_{avg}$ is average permeability
+\item $\Phi^{-1}$ is inverse standard normal CDF
+\item $p_i = (i - 0.5)/N$ is cumulative probability
+\item $N$ is number of layers
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$k_i$}{Layer permeability (mD)}
+\symitem{$k_{avg}$}{Average permeability (mD)}
+\symitem{$\sigma$}{Standard deviation of $\ln(k)$}
+\symitem{$\Phi^{-1}$}{Inverse cumulative normal distribution}
+\symitem{$N$}{Number of layers}
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Aquifer Models}
+%=============================================================================
+
+\subsection{Van Everdingen-Hurst Model}
+
+\subsubsection{Description}
+The Van Everdingen-Hurst model calculates water influx from an aquifer into a reservoir. It uses dimensionless influence functions based on the radial diffusivity equation.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Water Influx:}
+\begin{equation}
+W_e(t) = B \times \sum_{j=1}^{n} \Delta P_j \times W_D(t_D - t_{D,j})
+\end{equation}
+
+where:
+\begin{equation}
+B = 1.119 \times \phi \times c_t \times h \times r_e^2 \quad \text{(rb/psi)}
+\end{equation}
+
+\textbf{Dimensionless Time:}
+\begin{equation}
+t_D = \frac{0.000264 \times k \times t}{\phi \times \mu \times c_t \times r_e^2}
+\end{equation}
+
+\textbf{Dimensionless Radius:}
+\begin{equation}
+r_D = \frac{r_{aq}}{r_e}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$W_e$}{Cumulative water influx (rb)}
+\symitem{$B$}{Aquifer constant (rb/psi)}
+\symitem{$\Delta P_j$}{Pressure drop at time step $j$ (psia)}
+\symitem{$W_D$}{Dimensionless water influx function}
+\symitem{$t_D$}{Dimensionless time}
+\symitem{$\phi$}{Aquifer porosity (fraction)}
+\symitem{$c_t$}{Total compressibility (1/psi)}
+\symitem{$h$}{Aquifer thickness (ft)}
+\symitem{$r_e$}{Reservoir radius (ft)}
+\symitem{$r_{aq}$}{Aquifer outer radius (ft)}
+\symitem{$k$}{Aquifer permeability (mD)}
+\symitem{$\mu$}{Water viscosity (cP)}
+\symitem{$t$}{Time (days)}
+\end{itemize}
+
+\subsection{Influence Functions}
+
+The dimensionless water influx $W_D(t_D)$ is tabulated for various dimensionless radius ratios $r_D$. For:
+\begin{itemize}
+\item Infinite aquifer: $r_D = \infty$
+\item Finite aquifer: $r_D = 2, 3, 5, 10, etc.$
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Phase Behavior}
+%=============================================================================
+
+\subsection{Rachford-Rice Flash Calculation}
+
+\subsubsection{Description}
+The Rachford-Rice equation is used to calculate vapor and liquid phase compositions and amounts for a multi-component mixture at specified temperature and pressure.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Rachford-Rice Equation:}
+\begin{equation}
+\sum_{i=1}^{n} \frac{z_i (K_i - 1)}{1 + V(K_i - 1)} = 0
+\end{equation}
+
+where:
+\begin{itemize}
+\item $V$ is vapor mole fraction (solve iteratively)
+\item $L = 1 - V$ is liquid mole fraction
+\end{itemize}
+
+\textbf{Component Mole Fractions:}
+\begin{align}
+x_i &= \frac{z_i}{1 + V(K_i - 1)} \quad \text{(liquid)} \\
+y_i &= \frac{K_i \times z_i}{1 + V(K_i - 1)} \quad \text{(vapor)}
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$z_i$}{Overall mole fraction of component $i$}
+\symitem{$x_i$}{Liquid phase mole fraction of component $i$}
+\symitem{$y_i$}{Vapor phase mole fraction of component $i$}
+\symitem{$K_i$}{Equilibrium K-value for component $i$ ($K_i = y_i/x_i$)}
+\symitem{$V$}{Vapor phase mole fraction}
+\symitem{$L$}{Liquid phase mole fraction}
+\symitem{$n$}{Number of components}
+\end{itemize}
+
+\textbf{Solution Method:}
+Newton-Raphson iteration:
+\begin{equation}
+V^{n+1} = V^n - \frac{f(V^n)}{f'(V^n)}
+\end{equation}
+
+where:
+\begin{align}
+f(V) &= \sum_{i=1}^{n} \frac{z_i (K_i - 1)}{1 + V(K_i - 1)} \\
+f'(V) &= -\sum_{i=1}^{n} \frac{z_i (K_i - 1)^2}{[1 + V(K_i - 1)]^2}
+\end{align}
+
+\newpage
+
+%=============================================================================
+\section{Quick Reference Tables}
+%=============================================================================
+
+\subsection{Physical Constants}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Constant} & \textbf{Symbol} & \textbf{Value} \\
+\midrule
+Universal gas constant & $R$ & 10.73 psia·ft³/(lbmol·°R) \\
+Standard pressure & $P_{sc}$ & 14.7 psia \\
+Standard temperature & $T_{sc}$ & 60°F (520°R) \\
+Air molecular weight & $M_{air}$ & 28.97 lb/lbmol \\
+Water density at SC & $\rho_w^{SC}$ & 62.4 lb/ft³ \\
+Conversion °F to °R & $T_R$ & $T_F + 459.67$ \\
+\bottomrule
+\end{tabular}
+\caption{Physical Constants Used in Calculations}
+\end{table}
+
+\subsection{Conversion Factors}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{From} & \textbf{To} & \textbf{Multiply By} \\
+\midrule
+psia & bara & 0.06895 \\
+°F & °C & $(T_F - 32) \times 5/9$ \\
+ft & m & 0.3048 \\
+mD & m² & $9.869 \times 10^{-16}$ \\
+cP & Pa·s & 0.001 \\
+STB & m³ & 0.1590 \\
+MSCF & m³ & 28.32 \\
+lb/ft³ & kg/m³ & 16.02 \\
+\bottomrule
+\end{tabular}
+\caption{Common Unit Conversions}
+\end{table}
+
+\subsection{Typical Property Ranges}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Property} & \textbf{Typical Range} & \textbf{Comments} \\
+\midrule
+API gravity & 10 - 50° & Light crude: 30-50°, Heavy: 10-25° \\
+Gas gravity & 0.6 - 1.2 & Dry gas: 0.6-0.7, Wet gas: 0.7-0.9 \\
+$R_s$ at $P_b$ & 100 - 3000 scf/stb & Depends on oil type and pressure \\
+$B_o$ & 1.01 - 2.0 rb/stb & Increases with $R_s$ \\
+$\mu_o$ & 0.5 - 100 cP & Light oil: 0.5-5, Heavy: 10-100+ \\
+Z-factor & 0.7 - 1.2 & Lower at medium pressures \\
+$B_g$ & 0.003 - 0.010 rcf/scf & Increases with T, decreases with P \\
+$\mu_g$ & 0.01 - 0.03 cP & Increases with P and T \\
+Permeability & 0.1 - 1000 mD & Tight: $<$1, Good: 100-1000 \\
+Porosity & 0.05 - 0.35 & Low: 0.05-0.15, Good: 0.20-0.30 \\
+\bottomrule
+\end{tabular}
+\caption{Typical Property Ranges for Petroleum Reservoirs}
+\end{table}
+
+\newpage
+
+%=============================================================================
+\section{Correlation Method Recommendations}
+%=============================================================================
+
+\subsection{Oil PVT Methods}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Property} & \textbf{Recommended} & \textbf{When to Use} \\
+\midrule
+Bubble Point & VALMC & Wide range of conditions, most accurate \\
+ & STAN & Classic correlation, quick estimates \\
+ & VELAR & Regional correlations, comparison \\
+\midrule
+Solution GOR & VELAR & Default choice, good accuracy \\
+ & STAN & Compatibility with older studies \\
+ & VALMC & Alternative method \\
+\midrule
+FVF & MCAIN & Most accurate, density-based \\
+ & STAN & Simple correlation, fast \\
+\midrule
+Viscosity & BR & Industry standard, widely validated \\
+\bottomrule
+\end{tabular}
+\caption{Recommended Correlations for Oil PVT}
+\end{table}
+
+\subsection{Gas PVT Methods}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Property} & \textbf{Recommended} & \textbf{When to Use} \\
+\midrule
+Z-Factor & DAK & Most accurate, industry standard \\
+ & HY & Fast, good for most conditions \\
+ & WYW & Newer correlation, comparison \\
+ & BUR & High non-hydrocarbons, 100\% CO$_2$, H$_2$ \\
+\midrule
+Critical Props & PMC & Best accuracy, accounts for non-HCs \\
+ & SUT & Classic method, compatibility \\
+ & BUR & High non-hydrocarbon content \\
+\midrule
+Viscosity & LGE & Industry standard \\
+\bottomrule
+\end{tabular}
+\caption{Recommended Correlations for Gas PVT}
+\end{table}
+
+\subsection{Relative Permeability Methods}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Method} & \textbf{Use For} & \textbf{Advantages} \\
+\midrule
+Corey & Quick estimates & Simple, fast, widely used \\
+ & Standard cases & Few parameters, easy to understand \\
+ & Initial models & Good starting point \\
+\midrule
+LET & History matching & Flexible curve shapes \\
+ & Complex systems & Better fit to lab data \\
+ & Final models & Independent endpoint control \\
+\bottomrule
+\end{tabular}
+\caption{Relative Permeability Method Selection}
+\end{table}
+
+\newpage
+
+%=============================================================================
+\section{Tool Categories and Count}
+%=============================================================================
+
+\subsection{Available Tools by Category}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{clc}
+\toprule
+\textbf{Category} & \textbf{Description} & \textbf{Tools} \\
+\midrule
+\textbf{Oil PVT} & Oil property calculations & 17 \\
+ & \small Bubble point, Rs, Bo, viscosity, density, etc. & \\
+\midrule
+\textbf{Gas PVT} & Gas property calculations & 11 \\
+ & \small Z-factor, critical props, Bg, viscosity, etc. & \\
+\midrule
+\textbf{Inflow} & Well performance & 4 \\
+ & \small Oil/gas rates for radial/linear flow & \\
+\midrule
+\textbf{Simulation} & Reservoir simulation support & 3 \\
+ & \small Rel perm tables, aquifer functions, flash & \\
+\midrule
+\textbf{Brine} & Brine properties & 2 \\
+ & \small CH$_4$ and CO$_2$ saturated brine & \\
+\midrule
+\textbf{Heterogeneity} & Layer analysis & 5 \\
+ & \small Lorenz, beta, layer distributions & \\
+\midrule
+\textbf{Library} & Component properties & 1 \\
+ & \small Critical properties for 100+ components & \\
+\midrule
+\textbf{Config} & Configuration resources & 4 \\
+ & \small Units, methods, constants, help & \\
+\midrule
+\textbf{Total} & & \textbf{47} \\
+\bottomrule
+\end{tabular}
+\caption{pyResToolbox MCP Tool Categories}
+\end{table}
+
+\subsection{Key Features}
+
+\begin{itemize}
+\item \textbf{Production Ready}: All 47 tools tested and validated
+\item \textbf{Field Units}: Consistent use of US oilfield units
+\item \textbf{Array Support}: Calculate properties at multiple pressures simultaneously
+\item \textbf{Multiple Methods}: Choose from various industry-standard correlations
+\item \textbf{Type Safety}: Pydantic models ensure input validation
+\item \textbf{Zero Configuration}: Works out of the box with Claude Desktop
+\item \textbf{GPL-3.0 Licensed}: Free and open source
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Usage Notes and Best Practices}
+%=============================================================================
+
+\subsection{General Guidelines}
+
+\subsubsection{Input Validation}
+\begin{itemize}
+\item Always use absolute pressures (psia, not psig or barg)
+\item Temperature must be in Fahrenheit, not Celsius
+\item Check that input ranges are physically realistic
+\item Verify that saturation endpoints sum correctly (e.g., $S_{wc} + S_{or} < 1.0$)
+\end{itemize}
+
+\subsubsection{Method Selection}
+\begin{itemize}
+\item Use recommended methods unless specific requirements exist
+\item For bubble point: VALMC is most accurate for wide ranges
+\item For Z-factor: DAK is industry standard, BUR for high non-HCs
+\item For relative permeability: Corey for quick estimates, LET for accuracy
+\end{itemize}
+
+\subsubsection{Common Mistakes to Avoid}
+\begin{itemize}
+\item Using separator temperature instead of reservoir temperature
+\item Confusing $R_{sb}$ (solution GOR at bubble point) with separator GOR
+\item Not setting Vogel=True when $P_i < P_b$ (saturated reservoir)
+\item Using wrong gas gravity (separator vs weighted average)
+\item Not accounting for non-hydrocarbon components (H$_2$S, CO$_2$, N$_2$)
+\item Forgetting to convert units from SI to Field Units
+\end{itemize}
+
+\subsection{PVT Calculation Workflow}
+
+\subsubsection{Typical Oil PVT Workflow}
+\begin{enumerate}
+\item Calculate bubble point pressure ($P_b$) from $R_{sb}$, API, $T$, $\gamma_g$
+\item Check if reservoir is undersaturated ($P_i > P_b$) or saturated ($P_i < P_b$)
+\item Calculate $R_s(P)$ at desired pressures
+\item Calculate $B_o(P, R_s)$ using McCain or Standing method
+\item Calculate $\mu_o(P, R_s)$ using Beggs-Robinson
+\item Calculate $\rho_o(B_o, R_s)$ using SWMH method
+\item Calculate $c_o$ from numerical derivatives of $B_o$
+\item Generate complete PVT table for simulation
+\end{enumerate}
+
+\subsubsection{Typical Gas PVT Workflow}
+\begin{enumerate}
+\item Calculate pseudo-critical properties ($T_c$, $P_c$) from $\gamma_g$ and impurities
+\item Calculate Z-factor at desired pressures using DAK or BUR
+\item Calculate $B_g(P, T, Z)$ from real gas equation
+\item Calculate gas density $\rho_g(P, T, Z)$
+\item Calculate gas viscosity $\mu_g(\rho_g, T)$ using LGE method
+\item Calculate gas compressibility $c_g$ from Z-factor derivatives
+\item Calculate pseudopressure $\psi(P)$ by integrating $P/(\mu_g Z)$
+\end{enumerate}
+
+\subsection{Well Performance Analysis}
+
+\subsubsection{IPR Generation Steps}
+\begin{enumerate}
+\item Gather reservoir data: $P_i$, $P_b$, API, $T$, $h$, $k$, $S$, $r_e$, $r_w$
+\item Calculate PVT properties at average pressure
+\item Choose flow geometry: radial (vertical well) or linear (horizontal well)
+\item For saturated reservoir ($P_i < P_b$), set Vogel=True
+\item Calculate rates at multiple flowing pressures: $P_{wf}$ = 0 to $P_i$
+\item Plot $q$ vs $P_{wf}$ to generate IPR curve
+\item Identify AOF (absolute open flow = rate at $P_{wf}$ = 0)
+\end{enumerate}
+
+\subsection{Simulation Preparation}
+
+\subsubsection{Relative Permeability Table Generation}
+\begin{enumerate}
+\item Choose table type: SWOF (water-oil), SGOF (gas-oil), or SGWFN (3-phase)
+\item Choose correlation: Corey (simple) or LET (flexible)
+\item Specify saturation endpoints: $S_{wc}$, $S_{or}$, $S_{org}$, $S_{gc}$
+\item Set maximum relative permeabilities: $k_{rw}^{max}$, $k_{ro}^{max}$, $k_{rg}^{max}$
+\item Define correlation parameters (Corey exponents or LET parameters)
+\item Generate table with 20-50 saturation points
+\item Validate endpoints and curves against core data
+\item Export to ECLIPSE/CMG format for simulation
+\end{enumerate}
+
+\newpage
+
+%=============================================================================
+\section{References}
+%=============================================================================
+
+\subsection{Key Publications}
+
+\subsubsection{Oil PVT Correlations}
+\begin{itemize}
+\item Standing, M.B. (1947). "A Pressure-Volume-Temperature Correlation for Mixtures of California Oils and Gases." \textit{Drilling and Production Practices}, API.
+\item Valko, P.P. and McCain, W.D. (2003). "Reservoir Oil Bubblepoint Pressures Revisited; Solution Gas-Oil Ratios and Surface Gas Specific Gravities." \textit{Journal of Petroleum Science and Engineering}.
+\item Velarde, J., Blasingame, T.A., and McCain, W.D. (1997). "Correlation of Black Oil Properties at Pressures Below Bubble Point Pressure." \textit{SPE Annual Technical Conference}.
+\item McCain, W.D., Spivey, J.P., and Lenn, C.P. (2011). \textit{Petroleum Reservoir Fluid Property Correlations}. PennWell Books.
+\end{itemize}
+
+\subsubsection{Gas PVT Correlations}
+\begin{itemize}
+\item Dranchuk, P.M. and Abou-Kassem, J.H. (1975). "Calculation of Z Factors for Natural Gases Using Equations of State." \textit{Journal of Canadian Petroleum Technology}.
+\item Hall, K.R. and Yarborough, L. (1973). "A New Equation of State for Z-Factor Calculations." \textit{Oil and Gas Journal}.
+\item Wang, X., Ye, F., and Wu, K. (2021). "A New Correlation for Calculating Gas Compressibility Factor." \textit{Journal of Petroleum Science and Engineering}.
+\item Burgoyne, M.W. (Santos Ltd), Nielsen, M.H., and Stanko, M. (Whitson AS) (2025). "A Universal, EOS-Based Correlation for Z-Factor, Viscosity and Enthalpy for Hydrocarbon and H$_2$, N$_2$, CO$_2$, H$_2$S Gas Mixtures." \textit{SPE Paper 229932-MS}. Presented at ADIPEC, Abu Dhabi, UAE, 3-6 November 2025. Supports high concentrations of non-hydrocarbons including 100\% CO$_2$ and H$_2$.
+\item Lee, A.L., Gonzalez, M.H., and Eakin, B.E. (1966). "The Viscosity of Natural Gases." \textit{Journal of Petroleum Technology}.
+\item Piper, L.D., McCain, W.D., and Corredor, J.H. (1993). "Compressibility Factors for Naturally Occurring Petroleum Gases." \textit{SPE Gas Technology Symposium}.
+\item Sutton, R.P. (1985). "Compressibility Factors for High-Molecular-Weight Reservoir Gases." \textit{SPE Annual Technical Conference}.
+\end{itemize}
+
+\subsubsection{Well Performance}
+\begin{itemize}
+\item Darcy, H. (1856). \textit{Les Fontaines Publiques de la Ville de Dijon}. Victor Dalmont.
+\item Vogel, J.V. (1968). "Inflow Performance Relationships for Solution-Gas Drive Wells." \textit{Journal of Petroleum Technology}.
+\item Standing, M.B. (1971). "Concerning the Calculation of Inflow Performance of Wells Producing from Solution Gas Drive Reservoirs." \textit{Journal of Petroleum Technology}.
+\end{itemize}
+
+\subsubsection{Relative Permeability}
+\begin{itemize}
+\item Corey, A.T. (1954). "The Interrelation Between Gas and Oil Relative Permeabilities." \textit{Producers Monthly}.
+\item Lomeland, F., Ebeltoft, E., and Thomas, W.H. (2005). "A New Versatile Relative Permeability Correlation." \textit{International Symposium of the Society of Core Analysts}.
+\end{itemize}
+
+\subsubsection{Brine Properties}
+\begin{itemize}
+\item McCain, W.D. (1990). \textit{The Properties of Petroleum Fluids}. PennWell Publishing Company.
+\item Batzle, M. and Wang, Z. (1992). "Seismic Properties of Pore Fluids." \textit{Geophysics}.
+\end{itemize}
+
+\subsubsection{Reservoir Heterogeneity}
+\begin{itemize}
+\item Dykstra, H. and Parsons, R.L. (1950). "The Prediction of Oil Recovery by Waterflood." \textit{Secondary Recovery of Oil in the United States}. API.
+\item Schmalz, J.P. and Rahme, H.D. (1950). "The Variation of Waterflood Performance with Variation in Permeability Profile." \textit{Producers Monthly}.
+\item Lake, L.W. (1989). \textit{Enhanced Oil Recovery}. Prentice Hall.
+\end{itemize}
+
+\subsection{Software and Tools}
+\begin{itemize}
+\item Burgoyne, M.W. (2024). \textit{pyResToolbox: A Collection of Reservoir Engineering Utilities}. GitHub: \url{https://github.com/mwburgoyne/pyResToolbox}
+\item Anthropic (2024). \textit{Model Context Protocol}. \url{https://modelcontextprotocol.io/}
+\item Serrao, G. (2024). \textit{pyResToolbox MCP Server}. GitHub: \url{https://github.com/gabrielserrao/pyrestoolbox-mcp}
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Appendix: Nomenclature}
+%=============================================================================
+
+\subsection{Primary Symbols}
+
+\begin{longtable}{llp{8cm}}
+\toprule
+\textbf{Symbol} & \textbf{Units} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Symbol} & \textbf{Units} & \textbf{Description} \\
+\midrule
+\endhead
+
+% Oil Properties
+$\text{API}$ & degrees & Oil API gravity \\
+$B_o$ & rb/stb & Oil formation volume factor \\
+$c_o$ & 1/psi & Oil compressibility \\
+$\mu_o$ & cP & Oil viscosity \\
+$\rho_o$ & lb/ft³ & Oil density \\
+$R_s$ & scf/stb & Solution gas-oil ratio \\
+$R_{sb}$ & scf/stb & Solution GOR at bubble point \\
+$P_b$ & psia & Bubble point pressure \\
+$\gamma_o$ & - & Oil specific gravity (water=1) \\
+
+% Gas Properties
+$B_g$ & rcf/scf & Gas formation volume factor \\
+$c_g$ & 1/psi & Gas compressibility \\
+$\mu_g$ & cP & Gas viscosity \\
+$\rho_g$ & lb/ft³ & Gas density \\
+$Z$ & - & Gas compressibility factor (Z-factor) \\
+$\gamma_g$ & - & Gas specific gravity (air=1) \\
+$P_c$ & psia & Pseudo-critical pressure \\
+$T_c$ & °R & Pseudo-critical temperature \\
+$P_{pr}$ & - & Pseudo-reduced pressure \\
+$T_{pr}$ & - & Pseudo-reduced temperature \\
+$\psi$ & psia²/cP & Gas pseudopressure \\
+
+% Brine Properties
+$B_w$ & rb/stb & Water/brine formation volume factor \\
+$c_w$ & 1/psi & Brine compressibility \\
+$\mu_w$ & cP & Brine viscosity \\
+$\rho_w$ & lb/ft³ & Brine density \\
+$R_w$ & scf/stb & Gas solubility in brine \\
+$w_t$ & wt\% & Salinity (weight percent NaCl) \\
+
+% Reservoir Properties
+$k$ & mD & Permeability \\
+$h$ & ft & Pay thickness (net) \\
+$\phi$ & fraction & Porosity \\
+$S_w$ & fraction & Water saturation \\
+$S_o$ & fraction & Oil saturation \\
+$S_g$ & fraction & Gas saturation \\
+$S_{wc}$ & fraction & Connate water saturation \\
+$S_{or}$ & fraction & Residual oil saturation \\
+
+% Well/Flow Properties
+$P$ & psia & Pressure \\
+$T$ & °F & Temperature \\
+$P_i$ & psia & Initial/reservoir pressure \\
+$P_{wf}$ & psia & Wellbore flowing pressure \\
+$q_o$ & STB/day & Oil production rate \\
+$q_g$ & MSCF/day & Gas production rate \\
+$r_e$ & ft & Drainage radius \\
+$r_w$ & ft & Wellbore radius \\
+$S$ & - & Skin factor \\
+$L$ & ft & Horizontal well length \\
+
+% Relative Permeability
+$k_{rw}$ & - & Water relative permeability \\
+$k_{ro}$ & - & Oil relative permeability \\
+$k_{rg}$ & - & Gas relative permeability \\
+$S^*$ & - & Normalized saturation \\
+
+% Heterogeneity
+$L$ & - & Lorenz coefficient \\
+$\beta$ & - & Dykstra-Parsons coefficient \\
+
+% Non-Hydrocarbons
+$y_{CO_2}$ & fraction & CO$_2$ mole fraction \\
+$y_{H_2S}$ & fraction & H$_2$S mole fraction \\
+$y_{N_2}$ & fraction & N$_2$ mole fraction \\
+
+\bottomrule
+\caption{Nomenclature - Primary Symbols}
+\end{longtable}
+
+\subsection{Subscripts}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Subscript} & \textbf{Meaning} \\
+\midrule
+$o$ & Oil phase \\
+$g$ & Gas phase \\
+$w$ & Water/brine phase \\
+$b$ & At bubble point \\
+$i$ & Initial conditions \\
+$wf$ & Wellbore flowing \\
+$c$ & Critical or connate \\
+$r$ & Relative or residual \\
+$pr$ & Pseudo-reduced \\
+$D$ & Dimensionless \\
+$sc$ & Standard conditions \\
+$ST$ & Stock tank conditions \\
+$sp$ & Separator conditions \\
+\bottomrule
+\end{tabular}
+\caption{Common Subscripts}
+\end{table}
+
+\newpage
+
+%=============================================================================
+\section{Index of Formulas}
+%=============================================================================
+
+\subsection{By Property}
+
+\textbf{Oil Properties}
+\begin{itemize}
+\item Bubble Point Pressure ($P_b$): Standing (p.4), Valko-McCain (p.4), Velarde (p.4)
+\item Solution GOR ($R_s$): Standing (p.5), Valko-McCain, Velarde
+\item Formation Volume Factor ($B_o$): McCain (p.6), Standing (p.6)
+\item Viscosity ($\mu_o$): Beggs-Robinson (p.7)
+\item Density ($\rho_o$): SWMH (p.7)
+\item Compressibility ($c_o$): Explicit method (p.8)
+\item API-SG Conversions (p.8)
+\end{itemize}
+
+\textbf{Gas Properties}
+\begin{itemize}
+\item Z-Factor: DAK (p.9), Hall-Yarborough (p.10)
+\item Critical Properties: PMC (p.10), Sutton, BUR
+\item Formation Volume Factor ($B_g$): Real gas equation (p.11)
+\item Viscosity ($\mu_g$): Lee-Gonzalez-Eakin (p.11)
+\item Density ($\rho_g$): Ideal gas law corrected (p.11)
+\item Compressibility ($c_g$): From Z-factor (p.12)
+\item Pseudopressure ($\psi$): Integral formulation (p.12)
+\end{itemize}
+
+\textbf{Well Performance}
+\begin{itemize}
+\item Oil Rate - Radial: Darcy's law (p.13), Vogel IPR (p.13)
+\item Oil Rate - Linear: Darcy's law (p.14)
+\item Gas Rate - Radial: Pseudopressure formulation (p.14)
+\item Gas Rate - Linear: Pseudopressure formulation (p.14)
+\end{itemize}
+
+\textbf{Relative Permeability}
+\begin{itemize}
+\item Corey Correlation: Normalized saturation (p.15), Kr functions (p.15)
+\item LET Correlation: Three-parameter model (p.16)
+\end{itemize}
+
+\textbf{Brine Properties}
+\begin{itemize}
+\item Density ($\rho_w$): Pressure-temperature-salinity (p.17)
+\item Viscosity ($\mu_w$): Salinity correction (p.17)
+\item Compressibility ($c_w$): From FVF derivative (p.18)
+\item Formation Volume Factor ($B_w$): Three-effect model (p.18)
+\item Gas Solubility ($R_w$): Henry's Law (p.18)
+\end{itemize}
+
+\textbf{Heterogeneity}
+\begin{itemize}
+\item Lorenz Coefficient: Integral formulation (p.19)
+\item Dykstra-Parsons Coefficient: Percentile definition (p.19)
+\item Lorenz-Beta Conversion: Approximate relations (p.20)
+\item Layer Distribution: Log-normal model (p.20)
+\end{itemize}
+
+\textbf{Other}
+\begin{itemize}
+\item Van Everdingen-Hurst Aquifer: Water influx (p.21)
+\item Rachford-Rice Flash: Phase equilibrium (p.22)
+\end{itemize}
+
+\vspace{2cm}
+
+\begin{center}
+\rule{\linewidth}{0.5pt}
+\vspace{0.5cm}
+
+\Large\textbf{End of Formula Reference Guide}
+
+\vspace{0.5cm}
+
+\textbf{Compiled by:} Gabriel Serrão Seabra
+
+\vspace{0.5cm}
+
+For the latest version and updates, visit:\\
+\url{https://github.com/gabrielserrao/pyrestoolbox-mcp}
+
+\vspace{0.5cm}
+
+\textbf{Built on pyResToolbox:}\\
+Original library by Mark W. Burgoyne\\
+\url{https://github.com/mwburgoyne/pyResToolbox}
+
+\vspace{0.5cm}
+
+\textit{Remember: Always verify formulas with original sources before professional use.}
+
+\vspace{0.5cm}
+\rule{\linewidth}{0.5pt}
+\end{center}
+
+\end{document}

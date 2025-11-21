@@ -69,7 +69,9 @@
 \maketitle
 
 \begin{abstract}
-This document provides a comprehensive reference guide for all calculation tools available in the pyResToolbox Model Context Protocol (MCP) server. It includes mathematical formulas, symbol definitions, unit systems, and correlation methods for 47 production-ready tools covering oil PVT, gas PVT, well performance, simulation support, brine properties, and reservoir heterogeneity analysis. All calculations use Field Units (US Oilfield standard).
+This document provides a comprehensive reference guide for calculation tools available in the pyResToolbox Model Context Protocol (MCP) server. It includes mathematical formulas, symbol definitions, unit systems, and correlation methods covering oil PVT, gas PVT, well performance, simulation support, brine properties, and reservoir heterogeneity analysis. All calculations use Field Units (US Oilfield standard).
+
+\textbf{Note:} This guide covers the core petroleum engineering calculations. The MCP server also includes geomechanics and wellbore stability tools which are documented separately.
 
 \vspace{0.5cm}
 
@@ -443,9 +445,9 @@ where $t = 1/T_{pr}$ and $A_1, \ldots, A_9$ are correlation constants.
 \item Full range of P-T conditions
 \end{itemize}
 
-Based on a tuned 5-component Peng-Robinson EOS model. Formulation details are proprietary, but the correlation is implemented in pyResToolbox for practical use.
+Based on a tuned 5-component Peng-Robinson EOS model. The formulation methods are fully described in SPE-229932-MS, and the tuning datasets are available on GitHub. The correlation is implemented in pyResToolbox and provides open access to these calculations.
 
-\textbf{Reference:} SPE-229932-MS (ADIPEC 2025)
+\textbf{Reference:} SPE-229932-MS (ADIPEC 2025) - Burgoyne, M.W. (Santos Ltd), Nielsen, M.H., and Stanko, M. (Whitson AS)
 \end{tcolorbox}
 
 \textbf{Method Comparison:}
@@ -845,134 +847,129 @@ k_{rg} = k_{rg}^{max} \times \frac{(S_g^*)^{L_g}}{(S_g^*)^{L_g} + E_g (1 - S_g^*
 \section{Brine Properties}
 %=============================================================================
 
-\subsection{Brine Density ($\rho_w$)}
+\textbf{Important Note:} pyResToolbox uses \textbf{different calculation methods} for CH$_4$-saturated versus CO$_2$-saturated brines. The methods are described separately below.
+
+\subsection{CH$_4$-Saturated Brine Properties}
 
 \subsubsection{Description}
-Brine density depends on pressure, temperature, and salinity (NaCl concentration).
+For methane-saturated brines, pyResToolbox uses the Modified Spivey Correlation per McCain \textit{Petroleum Reservoir Fluid Properties}, Chapter 4, page 160.
+
+\subsubsection{Calculation Method}
 
 \begin{tcolorbox}[colback=formulabox,colframe=black!75]
-\textbf{Pure Water Density:}
-\begin{equation}
-\rho_{w,pure} = 62.368 + 0.438603 \times 10^{-3} P + f(T)
-\end{equation}
+\textbf{General Approach:}
 
-\textbf{Brine Density with Salinity:}
-\begin{equation}
-\rho_w = \rho_{w,pure} + \Delta\rho_{salt}(w_t)
-\end{equation}
-
-where salinity correction is:
-\begin{equation}
-\Delta\rho_{salt} = w_t \times (a_0 + a_1 T + a_2 P)
-\end{equation}
-\end{tcolorbox}
-
-\textbf{Symbol Definitions:}
-\begin{itemize}[leftmargin=2cm]
-\symitem{$\rho_w$}{Brine density (lb/ft³)}
-\symitem{$\rho_{w,pure}$}{Pure water density (lb/ft³)}
-\symitem{$P$}{Pressure (psia)}
-\symitem{$T$}{Temperature (°F)}
-\symitem{$w_t$}{Salinity (wt\% NaCl)}
-\symitem{$a_0, a_1, a_2$}{Correlation coefficients}
+Properties are calculated using empirical correlations that account for:
+\begin{itemize}
+\item Temperature and pressure effects
+\item Salinity (weight\% NaCl, range 0-100\%)
+\item Methane saturation fraction (0 = no methane, 1 = fully saturated)
 \end{itemize}
 
-\subsection{Brine Viscosity ($\mu_w$)}
-
-\subsubsection{Description}
-Brine viscosity decreases with temperature and increases with pressure and salinity.
-
-\begin{tcolorbox}[colback=formulabox,colframe=black!75]
-\begin{equation}
-\mu_w = \mu_{w,pure} \times [1 + A \times w_t + B \times w_t^2]
-\end{equation}
-
-where pure water viscosity is:
-\begin{equation}
-\mu_{w,pure} = a \times 10^{b/(T+c)}
-\end{equation}
+\textbf{Key Features:}
+\begin{itemize}
+\item Density calculated from pure water density with salt and methane corrections
+\item Viscosity uses temperature-dependent base correlation with salinity adjustments
+\item Compressibility derived from density derivatives with respect to pressure
+\item Methane solubility from modified Henry's Law with salt correction (lambda and eta coefficients)
+\item Gas molar volume calculated using Z-factor correlation for methane
+\item Formation volume factor (Bw) accounts for molar volume changes due to dissolved methane
+\end{itemize}
 \end{tcolorbox}
 
-\textbf{Symbol Definitions:}
+\textbf{Properties Calculated:}
 \begin{itemize}[leftmargin=2cm]
+\symitem{$B_w$}{Water formation volume factor (rb/stb)}
+\symitem{$\rho_w$}{Brine density (specific gravity, dimensionless)}
 \symitem{$\mu_w$}{Brine viscosity (cP)}
-\symitem{$\mu_{w,pure}$}{Pure water viscosity (cP)}
-\symitem{$w_t$}{Salinity (wt\% NaCl)}
-\symitem{$T$}{Temperature (°F)}
-\symitem{$A, B, a, b, c$}{Correlation coefficients}
-\end{itemize}
-
-\subsection{Brine Compressibility ($c_w$)}
-
-\subsubsection{Description}
-Brine compressibility is the fractional change in volume with pressure.
-
-\begin{tcolorbox}[colback=formulabox,colframe=black!75]
-\begin{equation}
-c_w = \frac{1}{B_w} \frac{dB_w}{dP} \quad \text{(1/psi)}
-\end{equation}
-
-\textbf{Empirical Correlation:}
-\begin{equation}
-c_w = (c_1 + c_2 T + c_3 T^2)(1 + c_4 w_t)
-\end{equation}
-\end{tcolorbox}
-
-\textbf{Symbol Definitions:}
-\begin{itemize}[leftmargin=2cm]
 \symitem{$c_w$}{Brine compressibility (1/psi)}
-\symitem{$B_w$}{Water formation volume factor (rb/stb)}
-\symitem{$T$}{Temperature (°F)}
-\symitem{$w_t$}{Salinity (wt\% NaCl)}
-\symitem{$c_1, c_2, c_3, c_4$}{Correlation coefficients}
+\symitem{$R_w$}{Methane solubility (scf/stb)}
 \end{itemize}
 
-\subsection{Brine Formation Volume Factor ($B_w$)}
+\textbf{Reference:} McCain, W.D. (2011). \textit{Petroleum Reservoir Fluid Property Correlations}, Chapter 4.
 
-\begin{tcolorbox}[colback=formulabox,colframe=black!75]
-\begin{equation}
-B_w = (1 + \Delta V_T)(1 + \Delta V_P)(1 + \Delta V_s)
-\end{equation}
-where:
-\begin{align}
-\Delta V_T &= -1.0001 \times 10^{-2} + 1.33391 \times 10^{-4} T + 5.50654 \times 10^{-7} T^2 \\
-\Delta V_P &= -1.95301 \times 10^{-9} P T - 1.72834 \times 10^{-13} P^2 T - 3.58922 \times 10^{-7} P \\
-\Delta V_s &= -w_t (2.65 \times 10^{-4} - 1.878 \times 10^{-6} w_t)
-\end{align}
-\end{tcolorbox}
-
-\textbf{Symbol Definitions:}
-\begin{itemize}[leftmargin=2cm]
-\symitem{$B_w$}{Water formation volume factor (rb/stb)}
-\symitem{$\Delta V_T$}{Thermal expansion effect}
-\symitem{$\Delta V_P$}{Pressure effect}
-\symitem{$\Delta V_s$}{Salinity effect}
-\symitem{$P$}{Pressure (psia)}
-\symitem{$T$}{Temperature (°F)}
-\symitem{$w_t$}{Salinity (wt\% NaCl)}
-\end{itemize}
-
-\subsection{Gas Solubility in Brine ($R_w$)}
+\subsection{CO$_2$-Saturated Brine Properties}
 
 \subsubsection{Description}
-Volume of gas (CH$_4$ or CO$_2$) dissolved in brine at reservoir conditions.
+For CO$_2$-saturated brines, pyResToolbox uses a thermodynamic approach with multiple specialized correlations that differ significantly from the methane case.
+
+\subsubsection{Calculation Methods}
 
 \begin{tcolorbox}[colback=formulabox,colframe=black!75]
-\textbf{Methane Solubility:}
-\begin{equation}
-R_w = A(T,P) \times (1 - \alpha \times w_t) \quad \text{(scf/stb)}
-\end{equation}
+\textbf{Phase Equilibrium:}
+\begin{itemize}
+\item \textbf{Spycher \& Pruess (2010)}: Modified Redlich-Kwong (SRK) Cubic Equation of State
+\item Provides CO$_2$-H$_2$O mutual solubility via activity coefficients
+\item Temperature-dependent EOS coefficients (different for T < 99°C vs T > 109°C)
+\item Blended calculations for 99-109°C transition range
+\end{itemize}
 
-where $A(T,P)$ is calculated from Henry's Law with temperature and pressure dependence.
+\textbf{Pure Brine Density:}
+\begin{itemize}
+\item \textbf{Spivey et al.} correlation (modified)
+\item Reference: McCain \textit{Petroleum Reservoir Fluid Property Correlations}, Chapter 4
+\end{itemize}
+
+\textbf{CO$_2$-Corrected Brine Density:}
+\begin{itemize}
+\item \textbf{Garcia (2001)} equation for CO$_2$ molar volume
+\item Combined with Spycher \& Pruess $x_{CO_2}$ and Spivey base density
+\end{itemize}
+
+\textbf{Pure Brine Viscosity:}
+\begin{itemize}
+\item \textbf{Mao-Duan (2009)} correlation
+\end{itemize}
+
+\textbf{CO$_2$-Corrected Brine Viscosity:}
+\begin{itemize}
+\item \textbf{Islam-Carlson (2012)} model
+\item Adjusts base viscosity for dissolved CO$_2$ mole fraction
+\end{itemize}
 \end{tcolorbox}
 
-\textbf{Symbol Definitions:}
+\textbf{Properties Calculated:}
 \begin{itemize}[leftmargin=2cm]
-\symitem{$R_w$}{Gas solubility in brine (scf/stb)}
-\symitem{$A(T,P)$}{Solubility function of temperature and pressure}
-\symitem{$\alpha$}{Salinity correction factor}
-\symitem{$w_t$}{Salinity (wt\% NaCl)}
+\symitem{$x_{CO_2}$}{CO$_2$ mole fraction in brine}
+\symitem{$y_{H_2O}$}{H$_2$O mole fraction in CO$_2$-rich phase}
+\symitem{$\rho_{CO_2-gas}$}{CO$_2$-rich gas density (lb/ft³)}
+\symitem{$\rho_{brine-sat}$}{CO$_2$-saturated brine density (lb/ft³)}
+\symitem{$\rho_{brine-pure}$}{Pure brine density (lb/ft³)}
+\symitem{$\mu_{brine-sat}$}{CO$_2$-saturated brine viscosity (cP)}
+\symitem{$\mu_{brine-pure}$}{Pure brine viscosity (cP)}
+\symitem{$B_{w-sat}$}{CO$_2$-saturated brine FVF (rb/stb)}
+\symitem{$R_w$}{CO$_2$ solubility (scf/stb)}
+\symitem{$c_{w-unsat}$}{Undersaturated brine compressibility (1/psi)}
+\symitem{$c_{w-sat}$}{Saturated brine compressibility (1/psi)}
 \end{itemize}
+
+\textbf{Salinity Input:} Parts per million (ppm) NaCl
+
+\textbf{Key References:}
+\begin{itemize}
+\item Spycher, N. and Pruess, K. (2010). Geochimica et Cosmochimica Acta
+\item Garcia, J.E. (2001). Fluid Phase Equilibria
+\item Mao, S. and Duan, Z. (2009). Chemical Geology
+\item Islam, A.W. and Carlson, E.S. (2012). Geothermics
+\end{itemize}
+
+\subsection{Key Differences Between CH$_4$ and CO$_2$ Methods}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3cm}p{5cm}p{5cm}}
+\toprule
+\textbf{Aspect} & \textbf{CH$_4$-Saturated} & \textbf{CO$_2$-Saturated} \\
+\midrule
+Phase Equilibrium & Henry's Law-based empirical & Cubic EOS (Spycher \& Pruess) \\
+Density Correction & Dissolved CH$_4$ molar volume & Garcia (2001) CO$_2$ molar volume \\
+Viscosity Adjustment & Salinity effect factors & Islam-Carlson (2012) model \\
+Salinity Units & Weight\% NaCl (0-100) & ppm NaCl \\
+Compressibility & From density derivatives & Numerical differentiation (sat/unsat) \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of CH$_4$ vs CO$_2$ Brine Calculation Methods}
+\end{table}
 
 \newpage
 
@@ -1394,16 +1391,20 @@ LET & History matching & Flexible curve shapes \\
 \textbf{Config} & Configuration resources & 4 \\
  & \small Units, methods, constants, help & \\
 \midrule
-\textbf{Total} & & \textbf{47} \\
+\textbf{Geomechanics} & Wellbore stability \& stress & 15 \\
+ & \small \textit{(Documented separately)} & \\
+\midrule
+\textbf{Total (Covered)} & & \textbf{47} \\
+\textbf{Total (All Tools)} & & \textbf{62} \\
 \bottomrule
 \end{tabular}
-\caption{pyResToolbox MCP Tool Categories}
+\caption{pyResToolbox MCP Tool Categories (This guide covers 47 core petroleum engineering tools)}
 \end{table}
 
 \subsection{Key Features}
 
 \begin{itemize}
-\item \textbf{Production Ready}: All 47 tools tested and validated
+\item \textbf{Production Ready}: All tools tested and validated
 \item \textbf{Field Units}: Consistent use of US oilfield units
 \item \textbf{Array Support}: Calculate properties at multiple pressures simultaneously
 \item \textbf{Multiple Methods}: Choose from various industry-standard correlations
@@ -1509,8 +1510,8 @@ LET & History matching & Flexible curve shapes \\
 \subsubsection{Oil PVT Correlations}
 \begin{itemize}
 \item Standing, M.B. (1947). "A Pressure-Volume-Temperature Correlation for Mixtures of California Oils and Gases." \textit{Drilling and Production Practices}, API.
-\item Valko, P.P. and McCain, W.D. (2003). "Reservoir Oil Bubblepoint Pressures Revisited; Solution Gas-Oil Ratios and Surface Gas Specific Gravities." \textit{Journal of Petroleum Science and Engineering}.
-\item Velarde, J., Blasingame, T.A., and McCain, W.D. (1997). "Correlation of Black Oil Properties at Pressures Below Bubble Point Pressure." \textit{SPE Annual Technical Conference}.
+\item Valko, P.P. and McCain, W.D. (2003). "Reservoir Oil Bubblepoint Pressures Revisited; Solution Gas-Oil Ratios and Surface Gas Specific Gravities." \textit{Journal of Petroleum Science and Engineering}, Vol. 37, Issues 3-4, pp. 153-169. DOI: 10.1016/S0920-4105(02)00319-4.
+\item Velarde, J., Blasingame, T.A., and McCain, W.D. (1997). "Correlation of Black Oil Properties at Pressures Below Bubble Point Pressure." \textit{SPE Annual Technical Conference and Exhibition}. (Note: Based on Velarde's 1996 Master's thesis at Texas A\&M University).
 \item McCain, W.D., Spivey, J.P., and Lenn, C.P. (2011). \textit{Petroleum Reservoir Fluid Property Correlations}. PennWell Books.
 \end{itemize}
 
@@ -1518,10 +1519,10 @@ LET & History matching & Flexible curve shapes \\
 \begin{itemize}
 \item Dranchuk, P.M. and Abou-Kassem, J.H. (1975). "Calculation of Z Factors for Natural Gases Using Equations of State." \textit{Journal of Canadian Petroleum Technology}.
 \item Hall, K.R. and Yarborough, L. (1973). "A New Equation of State for Z-Factor Calculations." \textit{Oil and Gas Journal}.
-\item Wang, X., Ye, F., and Wu, K. (2021). "A New Correlation for Calculating Gas Compressibility Factor." \textit{Journal of Petroleum Science and Engineering}.
+\item Wang, X., Ye, F., and Wu, K. (2021). "A New Correlation for Calculating Gas Compressibility Factor." \textit{Energy Reports}, Vol. 8, Supplement 2, pp. 130-137. DOI: 10.1016/j.egyr.2021.11.029.
 \item Burgoyne, M.W. (Santos Ltd), Nielsen, M.H., and Stanko, M. (Whitson AS) (2025). "A Universal, EOS-Based Correlation for Z-Factor, Viscosity and Enthalpy for Hydrocarbon and H$_2$, N$_2$, CO$_2$, H$_2$S Gas Mixtures." \textit{SPE Paper 229932-MS}. Presented at ADIPEC, Abu Dhabi, UAE, 3-6 November 2025. Supports high concentrations of non-hydrocarbons including 100\% CO$_2$ and H$_2$.
 \item Lee, A.L., Gonzalez, M.H., and Eakin, B.E. (1966). "The Viscosity of Natural Gases." \textit{Journal of Petroleum Technology}.
-\item Piper, L.D., McCain, W.D., and Corredor, J.H. (1993). "Compressibility Factors for Naturally Occurring Petroleum Gases." \textit{SPE Gas Technology Symposium}.
+\item Piper, L.D., McCain, W.D., and Corredor, J.H. (1993). "Compressibility Factors for Naturally Occurring Petroleum Gases." \textit{SPE Annual Technical Conference and Exhibition}, SPE-26668-MS, Houston, Texas, October 1993.
 \item Sutton, R.P. (1985). "Compressibility Factors for High-Molecular-Weight Reservoir Gases." \textit{SPE Annual Technical Conference}.
 \end{itemize}
 
@@ -1534,14 +1535,17 @@ LET & History matching & Flexible curve shapes \\
 
 \subsubsection{Relative Permeability}
 \begin{itemize}
-\item Corey, A.T. (1954). "The Interrelation Between Gas and Oil Relative Permeabilities." \textit{Producers Monthly}.
+\item Corey, A.T. (1954). "The Interrelation Between Gas and Oil Relative Permeabilities." \textit{Production Monthly}, Vol. 19, pp. 38-41.
 \item Lomeland, F., Ebeltoft, E., and Thomas, W.H. (2005). "A New Versatile Relative Permeability Correlation." \textit{International Symposium of the Society of Core Analysts}.
 \end{itemize}
 
 \subsubsection{Brine Properties}
 \begin{itemize}
-\item McCain, W.D. (1990). \textit{The Properties of Petroleum Fluids}. PennWell Publishing Company.
-\item Batzle, M. and Wang, Z. (1992). "Seismic Properties of Pore Fluids." \textit{Geophysics}.
+\item McCain, W.D. (2011). \textit{Petroleum Reservoir Fluid Property Correlations}. PennWell Books, Chapter 4.
+\item Spycher, N. and Pruess, K. (2010). "A Phase-Partitioning Model for CO$_2$-Brine Mixtures at Elevated Temperatures and Pressures: Application to CO$_2$-Enhanced Geothermal Systems." \textit{Transport in Porous Media}, Vol. 82, pp. 173-196. DOI: 10.1007/s11242-009-9425-y.
+\item Garcia, J.E. (2001). "Density of Aqueous Solutions of CO$_2$." LBNL Report \#49023, October 2001. Also published in \textit{Fluid Phase Equilibria}.
+\item Mao, S. and Duan, Z. (2009). "The Viscosity of Aqueous Alkali-Chloride Solutions up to 623 K, 1,000 bar, and High Ionic Strength." \textit{Chemical Geology}.
+\item Islam, A.W. and Carlson, E.S. (2012). "Viscosity Models and Effects of Dissolved CO$_2$." \textit{Energy \& Fuels}, Vol. 26, No. 8, pp. 5330-5336. DOI: 10.1021/ef3006228.
 \end{itemize}
 
 \subsubsection{Reservoir Heterogeneity}

@@ -69,9 +69,7 @@
 \maketitle
 
 \begin{abstract}
-This document provides a comprehensive reference guide for calculation tools available in the pyResToolbox Model Context Protocol (MCP) server. It includes mathematical formulas, symbol definitions, unit systems, and correlation methods covering oil PVT, gas PVT, well performance, simulation support, brine properties, and reservoir heterogeneity analysis. All calculations use Field Units (US Oilfield standard).
-
-\textbf{Note:} This guide covers the core petroleum engineering calculations. The MCP server also includes geomechanics and wellbore stability tools which are documented separately.
+This document provides a comprehensive reference guide for calculation tools available in the pyResToolbox Model Context Protocol (MCP) server. It includes mathematical formulas, symbol definitions, unit systems, and correlation methods covering oil PVT, gas PVT, well performance, simulation support, brine properties, reservoir heterogeneity analysis, and geomechanics/wellbore stability. All calculations use Field Units (US Oilfield standard).
 
 \vspace{0.5cm}
 
@@ -1160,6 +1158,598 @@ The dimensionless water influx $W_D(t_D)$ is tabulated for various dimensionless
 \newpage
 
 %=============================================================================
+\section{Geomechanics and Wellbore Stability}
+%=============================================================================
+
+The geomechanics module provides 27 tools for stress analysis, wellbore stability, and reservoir geomechanics calculations. These are critical for drilling optimization, completion design, sand management, and induced seismicity assessment.
+
+\subsection{Vertical (Overburden) Stress}
+
+\subsubsection{Description}
+The vertical stress at any depth is the weight of overlying rock and fluid column.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Onshore Wells:}
+\begin{equation}
+\sigma_v = \frac{\bar{\rho}_{bulk} \times D}{144} \quad \text{(psia)}
+\end{equation}
+
+\textbf{Offshore Wells:}
+\begin{equation}
+\sigma_v = \frac{\rho_w \times D_w + \bar{\rho}_{bulk} \times (D - D_w)}{144} \quad \text{(psia)}
+\end{equation}
+
+\textbf{Overburden Gradient:}
+\begin{equation}
+\frac{d\sigma_v}{dD} = \frac{\bar{\rho}_{bulk}}{144} \quad \text{(psi/ft)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\sigma_v$}{Vertical stress (psia)}
+\symitem{$\bar{\rho}_{bulk}$}{Average bulk density of overburden (lb/ft$^3$)}
+\symitem{$D$}{True vertical depth below surface (ft)}
+\symitem{$D_w$}{Water depth for offshore wells (ft)}
+\symitem{$\rho_w$}{Water density (lb/ft$^3$) - 62.4 fresh, 64 seawater}
+\end{itemize}
+
+\textbf{Typical Values:}
+\begin{itemize}
+\item Average bulk density: 140-160 lb/ft$^3$
+\item Overburden gradient: 0.95-1.1 psi/ft
+\end{itemize}
+
+\subsection{Pore Pressure Prediction}
+
+\subsubsection{Eaton Method (1975)}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Sonic Method:}
+\begin{equation}
+P_p = \sigma_v - (\sigma_v - P_{p,n}) \times \left(\frac{\Delta t_n}{\Delta t}\right)^{n}
+\end{equation}
+
+\textbf{Resistivity Method:}
+\begin{equation}
+P_p = \sigma_v - (\sigma_v - P_{p,n}) \times \left(\frac{R}{R_n}\right)^{n}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$P_p$}{Pore pressure (psia)}
+\symitem{$P_{p,n}$}{Normal pore pressure at depth (psia)}
+\symitem{$\Delta t$}{Observed sonic transit time ($\mu$s/ft)}
+\symitem{$\Delta t_n$}{Normal compaction trend sonic value ($\mu$s/ft)}
+\symitem{$R$}{Observed resistivity (ohm-m)}
+\symitem{$R_n$}{Normal compaction trend resistivity (ohm-m)}
+\symitem{$n$}{Eaton exponent (3.0 for sonic, 1.2 for resistivity)}
+\end{itemize}
+
+\subsection{Effective Stress}
+
+\subsubsection{Terzaghi and Biot Effective Stress}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Terzaghi Effective Stress ($\alpha = 1$):}
+\begin{equation}
+\sigma' = \sigma - P_p
+\end{equation}
+
+\textbf{Biot Effective Stress:}
+\begin{equation}
+\sigma' = \sigma - \alpha P_p
+\end{equation}
+
+where Biot coefficient:
+\begin{equation}
+\alpha = 1 - \frac{K_{bulk}}{K_{grain}} \approx 0.6 \text{ to } 1.0
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\sigma'$}{Effective stress (psi)}
+\symitem{$\sigma$}{Total stress (psi)}
+\symitem{$P_p$}{Pore pressure (psi)}
+\symitem{$\alpha$}{Biot coefficient (dimensionless)}
+\symitem{$K_{bulk}$}{Rock bulk modulus (psi)}
+\symitem{$K_{grain}$}{Grain (matrix) modulus (psi)}
+\end{itemize}
+
+\subsection{Horizontal Stress}
+
+\subsubsection{Poroelastic Horizontal Stress Model}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Minimum Horizontal Stress (Uniaxial Strain):}
+\begin{equation}
+\sigma_h = \frac{\nu}{1-\nu}(\sigma_v - \alpha P_p) + \alpha P_p
+\end{equation}
+
+\textbf{With Tectonic Stress:}
+\begin{equation}
+\sigma_h = \frac{\nu}{1-\nu}(\sigma_v - \alpha P_p) + \alpha P_p + \sigma_{tect}
+\end{equation}
+
+\textbf{Stress Regimes:}
+\begin{itemize}
+\item Normal Faulting: $\sigma_v > \sigma_H > \sigma_h$
+\item Strike-Slip: $\sigma_H > \sigma_v > \sigma_h$
+\item Reverse Faulting: $\sigma_H > \sigma_h > \sigma_v$
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\sigma_h$}{Minimum horizontal stress (psi)}
+\symitem{$\sigma_H$}{Maximum horizontal stress (psi)}
+\symitem{$\nu$}{Poisson's ratio (0.15-0.40 typical)}
+\symitem{$\sigma_{tect}$}{Tectonic stress contribution (psi)}
+\end{itemize}
+
+\subsection{Elastic Moduli Relationships}
+
+\subsubsection{Conversion Between Elastic Constants}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Given Young's Modulus (E) and Poisson's Ratio ($\nu$):}
+\begin{align}
+K &= \frac{E}{3(1-2\nu)} \quad \text{(Bulk Modulus)} \\
+G &= \frac{E}{2(1+\nu)} \quad \text{(Shear Modulus)} \\
+\lambda &= \frac{E\nu}{(1+\nu)(1-2\nu)} \quad \text{(Lamé's First Parameter)}
+\end{align}
+
+\textbf{Plane Strain Modulus:}
+\begin{equation}
+E' = \frac{E}{1-\nu^2}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$E$}{Young's modulus (psi)}
+\symitem{$K$}{Bulk modulus (psi)}
+\symitem{$G$}{Shear modulus (psi)}
+\symitem{$\lambda$}{Lamé's first parameter (psi)}
+\symitem{$\nu$}{Poisson's ratio (dimensionless)}
+\symitem{$E'$}{Plane strain modulus (psi)}
+\end{itemize}
+
+\subsection{Rock Strength}
+
+\subsubsection{Mohr-Coulomb Failure Criterion}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Shear Failure Envelope:}
+\begin{equation}
+\tau = c + \sigma_n \tan\phi
+\end{equation}
+
+\textbf{Principal Stress Form:}
+\begin{equation}
+\sigma_1 = \text{UCS} + q \sigma_3
+\end{equation}
+
+where:
+\begin{align}
+q &= \frac{1 + \sin\phi}{1 - \sin\phi} = \tan^2\left(45° + \frac{\phi}{2}\right) \\
+\text{UCS} &= \frac{2c \cos\phi}{1 - \sin\phi}
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\tau$}{Shear stress at failure (psi)}
+\symitem{$c$}{Cohesion (psi)}
+\symitem{$\sigma_n$}{Normal stress on failure plane (psi)}
+\symitem{$\phi$}{Internal friction angle (degrees)}
+\symitem{$\sigma_1$}{Maximum principal stress at failure (psi)}
+\symitem{$\sigma_3$}{Minimum principal stress (confining stress) (psi)}
+\symitem{$q$}{Mohr-Coulomb strength parameter}
+\symitem{UCS}{Unconfined Compressive Strength (psi)}
+\end{itemize}
+
+\subsection{Fracture Gradient}
+
+\subsubsection{Estimation Methods}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Eaton Method (1969):}
+\begin{equation}
+\frac{P_{frac}}{D} = \frac{\nu}{1-\nu}\left(\frac{\sigma_v - P_p}{D}\right) + \frac{P_p}{D}
+\end{equation}
+
+\textbf{From Known $\sigma_h$:}
+\begin{equation}
+P_{frac} = \sigma_h \quad \text{(minimum case)}
+\end{equation}
+
+\textbf{Equivalent Mud Weight:}
+\begin{equation}
+\text{EMW}_{frac} = \frac{P_{frac}}{0.052 \times D} \quad \text{(ppg)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$P_{frac}$}{Fracture pressure (psi)}
+\symitem{EMW$_{frac}$}{Fracture equivalent mud weight (ppg)}
+\symitem{$D$}{True vertical depth (ft)}
+\end{itemize}
+
+\subsection{Wellbore Stress (Kirsch Equations)}
+
+\subsubsection{Stress at Wellbore Wall}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Hoop (Tangential) Stress at Wall:}
+\begin{equation}
+\sigma_\theta = \sigma_H + \sigma_h - 2(\sigma_H - \sigma_h)\cos 2\theta - P_w
+\end{equation}
+
+\textbf{Maximum Hoop Stress (at $\theta = 90°$):}
+\begin{equation}
+\sigma_{\theta,max} = 3\sigma_H - \sigma_h - P_w
+\end{equation}
+
+\textbf{Minimum Hoop Stress (at $\theta = 0°$):}
+\begin{equation}
+\sigma_{\theta,min} = 3\sigma_h - \sigma_H - P_w
+\end{equation}
+
+\textbf{Radial Stress at Wall:}
+\begin{equation}
+\sigma_r = P_w
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\sigma_\theta$}{Tangential (hoop) stress (psi)}
+\symitem{$\sigma_r$}{Radial stress (psi)}
+\symitem{$P_w$}{Wellbore pressure (mud pressure) (psi)}
+\symitem{$\theta$}{Angle from $\sigma_H$ direction (degrees)}
+\end{itemize}
+
+\subsection{Breakout Width Calculation}
+
+\subsubsection{Description}
+Borehole breakouts occur when hoop stress exceeds rock strength. The angular width indicates stress state.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Breakout Initiation Condition:}
+\begin{equation}
+\sigma_\theta(\theta_b) = \text{UCS} + q \times \sigma_r
+\end{equation}
+
+\textbf{Breakout Width:}
+\begin{equation}
+W_{bo} = \pi - 2\theta_b \quad \text{(radians)}
+\end{equation}
+
+where $\theta_b$ is angle from $\sigma_H$ where failure initiates.
+\end{tcolorbox}
+
+\subsection{Tensile Failure and Breakdown Pressure}
+
+\subsubsection{Hydraulic Fracturing Initiation}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Breakdown Pressure (Impermeable Rock):}
+\begin{equation}
+P_{bd} = 3\sigma_h - \sigma_H + T_0 - P_p
+\end{equation}
+
+\textbf{Breakdown Pressure (Permeable Rock):}
+\begin{equation}
+P_{bd} = \frac{3\sigma_h - \sigma_H + T_0 - \eta P_p}{1 - \eta}
+\end{equation}
+
+where poroelastic constant:
+\begin{equation}
+\eta = \frac{\alpha(1-2\nu)}{1-\nu}
+\end{equation}
+
+\textbf{Fracture Re-opening Pressure:}
+\begin{equation}
+P_{reopen} = 3\sigma_h - \sigma_H - P_p
+\end{equation}
+
+\textbf{Propagation Pressure:}
+\begin{equation}
+P_{prop} \approx \sigma_h
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$P_{bd}$}{Formation breakdown pressure (psi)}
+\symitem{$T_0$}{Tensile strength of rock (psi)}
+\symitem{$\eta$}{Poroelastic constant (dimensionless)}
+\symitem{$P_{reopen}$}{Fracture re-opening pressure (psi)}
+\symitem{$P_{prop}$}{Fracture propagation pressure (psi)}
+\end{itemize}
+
+\subsection{Safe Mud Weight Window}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Lower Bound (Kick Pressure):}
+\begin{equation}
+\text{MW}_{min} = \frac{P_p}{0.052 \times D} + \Delta_{OB} \quad \text{(ppg)}
+\end{equation}
+
+\textbf{Upper Bound (Lost Circulation):}
+\begin{equation}
+\text{MW}_{max} = \frac{P_{frac}}{0.052 \times D} - \Delta_{frac} \quad \text{(ppg)}
+\end{equation}
+
+\textbf{Collapse Bound:}
+\begin{equation}
+\text{MW}_{collapse} = \frac{P_{collapse}}{0.052 \times D} \quad \text{(ppg)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{MW}{Mud weight (ppg)}
+\symitem{$\Delta_{OB}$}{Overbalance safety margin (ppg)}
+\symitem{$\Delta_{frac}$}{Fracture safety margin (ppg)}
+\symitem{$P_{collapse}$}{Collapse pressure from rock mechanics (psi)}
+\end{itemize}
+
+\subsection{Reservoir Compaction}
+
+\subsubsection{Uniaxial Strain Compaction}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Vertical Compaction:}
+\begin{equation}
+\Delta h = C_m \times \Delta P_p \times h
+\end{equation}
+
+\textbf{Uniaxial Compaction Coefficient:}
+\begin{equation}
+C_m = \frac{\alpha (1+\nu)(1-2\nu)}{E(1-\nu)}
+\end{equation}
+
+\textbf{Simplified Form:}
+\begin{equation}
+\Delta h = \frac{\alpha \Delta P_p \times h}{M}
+\end{equation}
+
+where constrained modulus:
+\begin{equation}
+M = \frac{E(1-\nu)}{(1+\nu)(1-2\nu)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\Delta h$}{Compaction (ft)}
+\symitem{$h$}{Reservoir thickness (ft)}
+\symitem{$\Delta P_p$}{Pressure depletion (psi)}
+\symitem{$C_m$}{Uniaxial compaction coefficient (1/psi)}
+\symitem{$M$}{Constrained (P-wave) modulus (psi)}
+\end{itemize}
+
+\subsection{Stress Path During Depletion}
+
+\subsubsection{Horizontal Stress Change with Pore Pressure}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Stress Path Coefficient:}
+\begin{equation}
+\gamma = \frac{\Delta\sigma_h}{\Delta P_p} = \alpha \frac{1-2\nu}{1-\nu}
+\end{equation}
+
+\textbf{Final Horizontal Stress:}
+\begin{equation}
+\sigma_h^{final} = \sigma_h^{initial} + \gamma \times \Delta P_p
+\end{equation}
+
+\textbf{Effective Stress Change:}
+\begin{equation}
+\Delta\sigma'_h = \Delta\sigma_h - \alpha \Delta P_p = (\gamma - \alpha)\Delta P_p
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\gamma$}{Stress path coefficient (typically 0.5-0.8)}
+\symitem{$\Delta\sigma_h$}{Change in horizontal stress (psi)}
+\symitem{$\Delta P_p$}{Change in pore pressure (psi)}
+\end{itemize}
+
+\textbf{Note:} For depletion ($\Delta P_p < 0$), horizontal stress decreases but effective stress increases.
+
+\subsection{Stress Polygon}
+
+\subsubsection{Frictional Equilibrium Constraints}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Maximum Stress Ratio (Frictional Limit):}
+\begin{equation}
+\frac{\sigma_1'}{\sigma_3'} \leq \left(\sqrt{\mu^2 + 1} + \mu\right)^2 = q_f
+\end{equation}
+
+\textbf{Normal Faulting Constraint ($\sigma_v = \sigma_1$):}
+\begin{equation}
+\sigma_h \geq \frac{\sigma_v - P_p}{q_f} + P_p
+\end{equation}
+
+\textbf{Reverse Faulting Constraint ($\sigma_v = \sigma_3$):}
+\begin{equation}
+\sigma_H \leq (\sigma_v - P_p) \times q_f + P_p
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\mu$}{Fault friction coefficient (0.6-0.85 typical, Byerlee's law)}
+\symitem{$q_f$}{Frictional limit ratio}
+\end{itemize}
+
+\subsection{Fault Stability Analysis}
+
+\subsubsection{Coulomb Failure Stress}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Slip Tendency:}
+\begin{equation}
+T_s = \frac{\tau}{\sigma_n'}
+\end{equation}
+
+\textbf{Dilation Tendency:}
+\begin{equation}
+T_d = \frac{\sigma_1' - \sigma_n'}{\sigma_1' - \sigma_3'}
+\end{equation}
+
+\textbf{Coulomb Failure Stress:}
+\begin{equation}
+\text{CFS} = \tau - \mu\sigma_n' - c
+\end{equation}
+
+\textbf{Slip Condition:}
+\begin{equation}
+\text{CFS} \geq 0 \quad \text{or} \quad T_s \geq \mu
+\end{equation}
+
+\textbf{Critical Pore Pressure for Slip:}
+\begin{equation}
+P_{p,crit} = \sigma_n - \frac{\tau - c}{\mu}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$T_s$}{Slip tendency (dimensionless)}
+\symitem{$T_d$}{Dilation tendency (dimensionless)}
+\symitem{CFS}{Coulomb Failure Stress (psi)}
+\symitem{$\tau$}{Shear stress on fault plane (psi)}
+\symitem{$\sigma_n'$}{Effective normal stress on fault (psi)}
+\symitem{$c$}{Fault cohesion (psi) - usually 0 for reactivation}
+\end{itemize}
+
+\subsection{Thermal Stress Effects}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Thermal Stress (Plane Strain):}
+\begin{equation}
+\sigma_{thermal} = -\frac{E \alpha_T \Delta T}{1-\nu}
+\end{equation}
+
+\textbf{Effect on Hoop Stress:}
+\begin{equation}
+\Delta\sigma_\theta = \sigma_{thermal}
+\end{equation}
+
+\textbf{Implications:}
+\begin{itemize}
+\item Cooling ($\Delta T < 0$): Tensile stress, reduces collapse risk, promotes fracturing
+\item Heating ($\Delta T > 0$): Compressive stress, increases collapse risk, inhibits fracturing
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\sigma_{thermal}$}{Thermal stress (psi)}
+\symitem{$\alpha_T$}{Linear thermal expansion coefficient (1/°F)}
+\symitem{$\Delta T$}{Temperature change (°F)}
+\end{itemize}
+
+\textbf{Typical Values:}
+\begin{itemize}
+\item $\alpha_T$: $5 \times 10^{-6}$ to $8 \times 10^{-6}$ 1/°F for rocks
+\end{itemize}
+
+\subsection{UCS Estimation from Logs}
+
+\subsubsection{Empirical Correlations}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{McNally (1987) - Sandstone:}
+\begin{equation}
+\text{UCS} = 1200 \times \exp(-0.036 \times \Delta t) \quad \text{(psi)}
+\end{equation}
+
+\textbf{Horsrud (2001) - Shale:}
+\begin{equation}
+\text{UCS} = 0.77 \times V_p^{2.93} \quad \text{(MPa, $V_p$ in km/s)}
+\end{equation}
+
+\textbf{Chang (2006) - General:}
+\begin{equation}
+\text{UCS} = 2.28 + 4.1089 \times E \quad \text{(MPa, $E$ in GPa)}
+\end{equation}
+
+\textbf{Vernik (1993) - Carbonate:}
+\begin{equation}
+\text{UCS} = 254 \times (1 - 2.7\phi)^2 \quad \text{(MPa)}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$\Delta t$}{Sonic transit time ($\mu$s/ft)}
+\symitem{$V_p$}{P-wave velocity (km/s)}
+\symitem{$\phi$}{Porosity (fraction)}
+\end{itemize}
+
+\subsection{Critical Drawdown for Sand Production}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Critical Flowing BHP:}
+\begin{equation}
+P_{wf,crit} = \frac{3\sigma_H' - \sigma_h' + (1+q)P_p - \text{UCS}}{1+q}
+\end{equation}
+
+\textbf{Critical Drawdown:}
+\begin{equation}
+\Delta P_{crit} = P_{res} - P_{wf,crit}
+\end{equation}
+
+where $q = (1+\sin\phi)/(1-\sin\phi)$
+\end{tcolorbox}
+
+\textbf{Risk Assessment:}
+\begin{itemize}
+\item Low risk: $\Delta P_{crit} > 1000$ psi, UCS $> 2000$ psi
+\item Moderate risk: $\Delta P_{crit}$ 500-1000 psi
+\item High risk: $\Delta P_{crit} < 500$ psi, UCS $< 1000$ psi
+\end{itemize}
+
+\subsection{Multiple Failure Criteria Comparison}
+
+\subsubsection{Available Criteria}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{1. Mohr-Coulomb (ignores $\sigma_2$):}
+\begin{equation}
+\sigma_1 = \text{UCS} + q\sigma_3
+\end{equation}
+
+\textbf{2. Drucker-Prager (smooth cone):}
+\begin{equation}
+\sqrt{J_2} = k + \alpha I_1
+\end{equation}
+
+where $I_1 = \sigma_1 + \sigma_2 + \sigma_3$ and $J_2 = \frac{1}{6}[(\sigma_1-\sigma_2)^2 + (\sigma_2-\sigma_3)^2 + (\sigma_1-\sigma_3)^2]$
+
+\textbf{3. Mogi-Coulomb (includes $\sigma_2$ effect):}
+\begin{equation}
+\tau_{oct} = a + b \sigma_{m,2}
+\end{equation}
+
+where $\sigma_{m,2} = (\sigma_1 + \sigma_3)/2$ and $\tau_{oct} = \frac{\sqrt{2}}{3}\sqrt{(\sigma_1-\sigma_2)^2 + (\sigma_2-\sigma_3)^2 + (\sigma_1-\sigma_3)^2}$
+\end{tcolorbox}
+
+\textbf{Note:} Mohr-Coulomb is most conservative. True triaxial criteria (Mogi-Coulomb, Modified Lade) account for intermediate stress strengthening effect.
+
+\newpage
+
+%=============================================================================
 \section{Phase Behavior}
 %=============================================================================
 
@@ -1391,14 +1981,13 @@ LET & History matching & Flexible curve shapes \\
 \textbf{Config} & Configuration resources & 4 \\
  & \small Units, methods, constants, help & \\
 \midrule
-\textbf{Geomechanics} & Wellbore stability \& stress & 15 \\
- & \small \textit{(Documented separately)} & \\
+\textbf{Geomechanics} & Wellbore stability \& stress & 27 \\
+ & \small Stress analysis, breakouts, fracturing, sanding & \\
 \midrule
-\textbf{Total (Covered)} & & \textbf{47} \\
-\textbf{Total (All Tools)} & & \textbf{62} \\
+\textbf{Total} & & \textbf{70} \\
 \bottomrule
 \end{tabular}
-\caption{pyResToolbox MCP Tool Categories (This guide covers 47 core petroleum engineering tools)}
+\caption{pyResToolbox MCP Tool Categories}
 \end{table}
 
 \subsection{Key Features}
@@ -1555,6 +2144,23 @@ LET & History matching & Flexible curve shapes \\
 \item Lake, L.W. (1989). \textit{Enhanced Oil Recovery}. Prentice Hall.
 \end{itemize}
 
+\subsubsection{Geomechanics and Wellbore Stability}
+\begin{itemize}
+\item Zoback, M.D. (2007). \textit{Reservoir Geomechanics}. Cambridge University Press.
+\item Fjaer, E., Holt, R.M., Horsrud, P., Raaen, A.M., and Risnes, R. (2008). \textit{Petroleum Related Rock Mechanics}, 2nd Edition. Elsevier.
+\item Kirsch, G. (1898). "Die Theorie der Elastizität und die Bedürfnisse der Festigkeitslehre." \textit{Zeitschrift des Vereines deutscher Ingenieure}, Vol. 42, pp. 797-807.
+\item Eaton, B.A. (1969). "Fracture Gradient Prediction and Its Application in Oilfield Operations." \textit{Journal of Petroleum Technology}, Vol. 21, No. 10, pp. 1353-1360.
+\item Eaton, B.A. (1975). "The Equation for Geopressure Prediction from Well Logs." \textit{SPE 5544}, Fall Meeting of SPE-AIME, Dallas, Texas.
+\item Bradley, W.B. (1979). "Failure of Inclined Boreholes." \textit{Journal of Energy Resources Technology}, Vol. 101, pp. 232-239.
+\item Aadnoy, B.S. (1988). "Modeling of the Stability of Highly Inclined Boreholes in Anisotropic Rock Formations." \textit{SPE Drilling Engineering}, Vol. 3, No. 3, pp. 259-268.
+\item Byerlee, J.D. (1978). "Friction of Rocks." \textit{Pure and Applied Geophysics}, Vol. 116, pp. 615-626.
+\item McNally, G.H. (1987). "Estimation of Coal Measures Rock Strength Using Sonic and Neutron Logs." \textit{Geoexploration}, Vol. 24, pp. 381-395.
+\item Horsrud, P. (2001). "Estimating Mechanical Properties of Shale from Empirical Correlations." \textit{SPE Drilling \& Completion}, Vol. 16, No. 2, pp. 68-73.
+\item Chang, C., Zoback, M.D., and Khaksar, A. (2006). "Empirical Relations between Rock Strength and Physical Properties in Sedimentary Rocks." \textit{Journal of Petroleum Science and Engineering}, Vol. 51, pp. 223-237.
+\item Vernik, L., Bruno, M., and Bovberg, C. (1993). "Empirical Relations between Compressive Strength and Porosity of Siliciclastic Rocks." \textit{International Journal of Rock Mechanics and Mining Sciences}, Vol. 30, No. 7, pp. 677-680.
+\item Al-Ajmi, A.M. and Zimmerman, R.W. (2005). "Relation between the Mogi and the Coulomb Failure Criteria." \textit{International Journal of Rock Mechanics and Mining Sciences}, Vol. 42, pp. 431-439.
+\end{itemize}
+
 \subsection{Software and Tools}
 \begin{itemize}
 \item Burgoyne, M.W. (2024). \textit{pyResToolbox: A Collection of Reservoir Engineering Utilities}. GitHub: \url{https://github.com/mwburgoyne/pyResToolbox}
@@ -1649,6 +2255,37 @@ $y_{CO_2}$ & fraction & CO$_2$ mole fraction \\
 $y_{H_2S}$ & fraction & H$_2$S mole fraction \\
 $y_{N_2}$ & fraction & N$_2$ mole fraction \\
 
+% Geomechanics Stresses
+$\sigma_v$ & psi & Vertical (overburden) stress \\
+$\sigma_H$ & psi & Maximum horizontal stress \\
+$\sigma_h$ & psi & Minimum horizontal stress \\
+$\sigma_\theta$ & psi & Tangential (hoop) stress \\
+$\sigma_r$ & psi & Radial stress \\
+$\sigma'$ & psi & Effective stress \\
+
+% Geomechanics Properties
+$\alpha$ & - & Biot coefficient \\
+$E$ & psi & Young's modulus \\
+$\nu$ & - & Poisson's ratio \\
+$K$ & psi & Bulk modulus \\
+$G$ & psi & Shear modulus \\
+$c$ & psi & Cohesion \\
+$\phi$ & degrees & Internal friction angle \\
+UCS & psi & Unconfined compressive strength \\
+$T_0$ & psi & Tensile strength \\
+
+% Geomechanics Failure/Stability
+$\tau$ & psi & Shear stress \\
+$\sigma_n$ & psi & Normal stress \\
+$\mu$ & - & Fault friction coefficient \\
+$T_s$ & - & Slip tendency \\
+$T_d$ & - & Dilation tendency \\
+CFS & psi & Coulomb Failure Stress \\
+
+% Geomechanics Thermal
+$\alpha_T$ & 1/°F & Thermal expansion coefficient \\
+$\Delta T$ & °F & Temperature change \\
+
 \bottomrule
 \caption{Nomenclature - Primary Symbols}
 \end{longtable}
@@ -1740,10 +2377,33 @@ $sp$ & Separator conditions \\
 \item Layer Distribution: Log-normal model (p.20)
 \end{itemize}
 
+\textbf{Geomechanics}
+\begin{itemize}
+\item Vertical Stress: Overburden calculation
+\item Pore Pressure: Eaton method (sonic/resistivity)
+\item Effective Stress: Terzaghi and Biot formulations
+\item Horizontal Stress: Poroelastic model, stress regimes
+\item Elastic Moduli: E, K, G, $\lambda$ conversions
+\item Rock Strength: Mohr-Coulomb criterion
+\item Fracture Gradient: Eaton method, EMW conversion
+\item Wellbore Stress: Kirsch equations (hoop/radial)
+\item Breakout Width: Failure initiation angle
+\item Breakdown Pressure: Hydraulic fracturing initiation
+\item Mud Weight Window: Kick, collapse, lost circulation bounds
+\item Reservoir Compaction: Uniaxial strain model
+\item Stress Path: Depletion/injection effects
+\item Stress Polygon: Frictional equilibrium constraints
+\item Fault Stability: Coulomb failure stress, slip tendency
+\item Thermal Stress: Temperature-induced stress changes
+\item UCS from Logs: McNally, Horsrud, Chang, Vernik correlations
+\item Critical Drawdown: Sand production prediction
+\item Failure Criteria: Mohr-Coulomb, Drucker-Prager, Mogi-Coulomb
+\end{itemize}
+
 \textbf{Other}
 \begin{itemize}
-\item Van Everdingen-Hurst Aquifer: Water influx (p.21)
-\item Rachford-Rice Flash: Phase equilibrium (p.22)
+\item Van Everdingen-Hurst Aquifer: Water influx
+\item Rachford-Rice Flash: Phase equilibrium
 \end{itemize}
 
 \vspace{2cm}

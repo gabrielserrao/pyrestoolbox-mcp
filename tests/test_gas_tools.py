@@ -9,15 +9,18 @@ async def test_gas_z_factor(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_z_factor",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": 3500.0,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "method": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": 3500.0,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "method": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -34,15 +37,18 @@ async def test_gas_z_factor_array(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_z_factor",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": pressures,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "method": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": pressures,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "method": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], list)
@@ -56,13 +62,16 @@ async def test_gas_critical_properties(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_critical_properties",
         {
-            "sg": sample_gas_params["sg"],
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "method": "PMC",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "method": "PMC",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], dict)
@@ -80,15 +89,18 @@ async def test_gas_formation_volume_factor(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_formation_volume_factor",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": 3000.0,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "zmethod": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": 3000.0,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "zmethod": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -102,15 +114,18 @@ async def test_gas_viscosity(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_viscosity",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": 3000.0,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "zmethod": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": 3000.0,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "zmethod": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -124,15 +139,18 @@ async def test_gas_density(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_density",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": 3000.0,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "zmethod": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": 3000.0,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "zmethod": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -146,15 +164,18 @@ async def test_gas_compressibility(mcp_client, sample_gas_params):
     result = await mcp_client.call_tool(
         "gas_compressibility",
         {
-            "sg": sample_gas_params["sg"],
-            "degf": sample_gas_params["degf"],
-            "p": 3000.0,
-            "h2s": 0.0,
-            "co2": 0.0,
-            "n2": 0.0,
-            "zmethod": "DAK",
+            "request": {
+                "sg": sample_gas_params["sg"],
+                "degf": sample_gas_params["degf"],
+                "p": 3000.0,
+                "h2s": 0.0,
+                "co2": 0.0,
+                "n2": 0.0,
+                "zmethod": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -168,15 +189,18 @@ async def test_gas_with_impurities(mcp_client):
     result = await mcp_client.call_tool(
         "gas_z_factor",
         {
-            "sg": 0.7,
-            "degf": 180.0,
-            "p": 3000.0,
-            "h2s": 0.05,
-            "co2": 0.10,
-            "n2": 0.02,
-            "method": "DAK",
+            "request": {
+                "sg": 0.7,
+                "degf": 180.0,
+                "p": 3000.0,
+                "h2s": 0.05,
+                "co2": 0.10,
+                "n2": 0.02,
+                "method": "DAK",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)

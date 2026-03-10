@@ -21,6 +21,8 @@ from ..models.oil_models import (
     WeightedAverageGasSGRequest,
     StockTankGORRequest,
     CheckGasSGsRequest,
+    OilHarmonizeRequest,
+    OilPVTRequest,
 )
 
 
@@ -121,6 +123,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
                 sg_g=sg_g_param,
                 sg_sp=sg_sp,
                 pbmethod=method_enum,
+                metric=request.metric,
             )
         except (SystemExit, BaseException) as e:
             # Catch sys.exit() calls from pyrestoolbox validation
@@ -207,20 +210,21 @@ def register_oil_tools(mcp: FastMCP) -> None:
         """
         method_enum = getattr(rs_method, request.method)
 
-        rs = oil.oil_rs(
-            api=request.api,
-            degf=request.degf,
-            p=request.p,
-            sg_sp=request.sg_g,  # oil_rs uses sg_sp not sg_g
-            pb=request.pb,
-            rsb=request.rsb,
-            rsmethod=method_enum,
-        )
-
-        # Convert numpy array to list for JSON serialization
-        if isinstance(rs, np.ndarray):
-            value = rs.tolist()
+        if isinstance(request.p, list):
+            value = [
+                float(oil.oil_rs(
+                    api=request.api, degf=request.degf, p=p_val,
+                    sg_sp=request.sg_g, pb=request.pb, rsb=request.rsb,
+                    rsmethod=method_enum, metric=request.metric,
+                ))
+                for p_val in request.p
+            ]
         else:
+            rs = oil.oil_rs(
+                api=request.api, degf=request.degf, p=request.p,
+                sg_sp=request.sg_g, pb=request.pb, rsb=request.rsb,
+                rsmethod=method_enum, metric=request.metric,
+            )
             value = float(rs)
 
         return {
@@ -311,6 +315,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             sg_o=sg_o,
             sg_g=request.sg_g,
             bomethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -398,6 +403,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             degf=request.degf,
             pb=request.pb,
             rs=request.rs,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -573,6 +579,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             pb=request.pb,
             sg_g=request.sg_g,
             rsb=request.rsb,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -819,6 +826,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             pbmethod=request.pb_method,
             rsmethod=request.rs_method,
             bomethod=request.bo_method,
+            metric=request.metric,
         )
 
         # Convert DataFrame to list of dicts
@@ -879,7 +887,8 @@ def register_oil_tools(mcp: FastMCP) -> None:
             degf=request.degf,
             rsb=request.rsb,
             sg_g=request.sg_g,
-            pbmethod=request.method
+            pbmethod=request.method,
+            metric=request.metric,
         )
         
         # rsb is the solution GOR at bubble point
@@ -921,6 +930,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             rsb=800.0,  # Typical value
             api=request.api,
             sg_sp=request.sg_g,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -1058,7 +1068,8 @@ def register_oil_tools(mcp: FastMCP) -> None:
         result = oil.oil_twu_props(
             mw=request.mw,
             sg=request.sg,
-            damp=request.damp
+            damp=request.damp,
+            metric=request.metric,
         )
 
         # result is tuple: (sg, tb, tc, pc, vc)
@@ -1193,4 +1204,100 @@ def register_oil_tools(mcp: FastMCP) -> None:
             "units": "dimensionless (air=1)",
             "inputs": request.model_dump(),
             "note": "sg_g and sg_sp are now consistent and validated"
+        }
+
+    @mcp.tool()
+    def oil_harmonize_pvt(request: OilHarmonizeRequest) -> dict:
+        """Auto-harmonize oil PVT parameters for internal consistency.
+
+        **PVT CALIBRATION TOOL** - Resolves consistent Pb, Rsb, rsb_frac, and vis_frac
+        from user inputs. Ensures bubble point and solution GOR are mutually consistent
+        with selected correlations. Optionally matches a known viscosity measurement.
+
+        **Behavior:**
+        - If only pb specified: calculates rsb from pb
+        - If only rsb specified: calculates pb from rsb
+        - If both specified: finds rsb_frac scaling to honor both values
+        - If uo_target + p_uo specified: computes vis_frac = uo_target / uo_corr
+
+        **Parameters:**
+        - **pb** (float, optional): Bubble point pressure (psia | barsa).
+        - **rsb** (float, optional): Solution GOR at Pb (scf/stb | sm3/sm3).
+        - **degf** (float, optional): Reservoir temperature (deg F | deg C).
+        - **api** (float, optional): Stock tank oil API gravity.
+        - **sg_sp** (float, optional): Separator gas SG.
+        - **uo_target** (float, optional): Target viscosity at p_uo (cP).
+        - **p_uo** (float, optional): Pressure where viscosity is known.
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** Harmonized Pb, Rsb, rsb_fraction, and viscosity_fraction.
+        """
+        pb_out, rsb_out, rsb_frac, vis_frac = oil.oil_harmonize(
+            pb=request.pb, rsb=request.rsb, degf=request.degf,
+            api=request.api, sg_sp=request.sg_sp, sg_g=request.sg_g,
+            uo_target=request.uo_target, p_uo=request.p_uo,
+            rsmethod=request.rs_method, pbmethod=request.pb_method,
+            metric=request.metric,
+        )
+        p_unit = "barsa" if request.metric else "psia"
+        gor_unit = "sm3/sm3" if request.metric else "scf/stb"
+        return {
+            "bubble_point": float(pb_out),
+            "rsb": float(rsb_out),
+            "rsb_fraction": float(rsb_frac),
+            "viscosity_fraction": float(vis_frac),
+            "units": {"pressure": p_unit, "gor": gor_unit},
+            "inputs": request.model_dump(),
+        }
+
+    @mcp.tool()
+    def create_oil_pvt(request: OilPVTRequest) -> dict:
+        """Create an oil PVT object and compute properties at specified pressures.
+
+        **OIL PVT CHARACTERIZATION TOOL** - Creates a reusable oil PVT object that
+        auto-harmonizes Pb and Rsb for internal consistency. Returns Rs, Bo, density,
+        and viscosity at each pressure point.
+
+        **Parameters:**
+        - **api** (float, required): Stock tank oil API gravity.
+        - **sg_sp** (float, required): Separator gas SG.
+        - **pb** (float, required): Bubble point pressure (psia | barsa).
+        - **temperature** (float, required): Reservoir temperature (deg F | deg C).
+        - **rsb** (float, optional): Solution GOR at Pb. 0 = auto-calculate.
+        - **uo_target** (float, optional): Target viscosity for calibration.
+        - **p_uo** (float, optional): Pressure of target viscosity.
+        - **pressures** (list[float], required): Pressures to evaluate.
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** Rs, Bo, density, and viscosity at each pressure point.
+        """
+        opvt = oil.OilPVT(
+            api=request.api, sg_sp=request.sg_sp, pb=request.pb,
+            degf=request.temperature, rsb=request.rsb, sg_g=request.sg_g,
+            uo_target=request.uo_target, p_uo=request.p_uo,
+            rsmethod=request.rs_method, pbmethod=request.pb_method,
+            bomethod=request.bo_method, metric=request.metric,
+        )
+        results = []
+        for p in request.pressures:
+            results.append({
+                "pressure": p,
+                "rs": float(opvt.rs(p, request.temperature)),
+                "bo": float(opvt.bo(p, request.temperature)),
+                "density": float(opvt.density(p, request.temperature)),
+                "viscosity": float(opvt.viscosity(p, request.temperature)),
+            })
+        p_unit = "barsa" if request.metric else "psia"
+        return {
+            "oil_pvt_properties": results,
+            "bubble_point": request.pb,
+            "api": request.api,
+            "units": {
+                "pressure": p_unit,
+                "rs": "sm3/sm3" if request.metric else "scf/stb",
+                "bo": "rm3/sm3" if request.metric else "rb/stb",
+                "density": "kg/m3" if request.metric else "lb/cuft",
+                "viscosity": "cP",
+            },
+            "inputs": request.model_dump(),
         }

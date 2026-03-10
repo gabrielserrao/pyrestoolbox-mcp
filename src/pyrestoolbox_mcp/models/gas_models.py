@@ -1,7 +1,7 @@
 """Pydantic models for Gas PVT calculations."""
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Literal, Union, List
+from typing import Literal, Union, List, Optional
 
 
 class ZFactorRequest(BaseModel):
@@ -28,6 +28,7 @@ class ZFactorRequest(BaseModel):
     method: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Calculation method (DAK recommended)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -60,6 +61,7 @@ class CriticalPropertiesRequest(BaseModel):
     method: Literal["PMC", "SUT", "BUR"] = Field(
         "PMC", description="Calculation method (PMC recommended)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class GasFVFRequest(BaseModel):
@@ -86,6 +88,7 @@ class GasFVFRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -124,6 +127,7 @@ class GasViscosityRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -162,6 +166,7 @@ class GasDensityRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -200,6 +205,7 @@ class GasCompressibilityRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -241,6 +247,7 @@ class GasPseudopressureRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class GasPressureFromPZRequest(BaseModel):
@@ -267,6 +274,7 @@ class GasPressureFromPZRequest(BaseModel):
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class GasSGFromGradientRequest(BaseModel):
@@ -279,6 +287,7 @@ class GasSGFromGradientRequest(BaseModel):
         ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
     )
     p: float = Field(..., gt=0, description="Pressure (psia)")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class GasWaterContentRequest(BaseModel):
@@ -310,6 +319,7 @@ class GasWaterContentRequest(BaseModel):
             if v <= 0:
                 raise ValueError("Value must be positive")
         return v
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class GasSGFromCompositionRequest(BaseModel):
@@ -332,3 +342,71 @@ class GasSGFromCompositionRequest(BaseModel):
     h2s: float = Field(0.0, ge=0, le=1, description="H2S mole fraction")
     n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
     h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
+
+
+class GasHydrateRequest(BaseModel):
+    """Request model for gas hydrate prediction."""
+
+    p: float = Field(..., gt=0, description="Operating pressure (psia | barsa)")
+    degf: float = Field(..., description="Operating temperature (deg F | deg C)")
+    sg: float = Field(..., ge=0.5, le=2.0, description="Gas specific gravity (air=1)")
+    method: str = Field("TOWLER", description="Hydrate prediction method")
+    inhibitor_type: Optional[str] = Field(
+        None, description="Inhibitor type: MEOH, MEG, DEG, TEG, or None"
+    )
+    inhibitor_wt_pct: float = Field(0.0, ge=0, le=100, description="Inhibitor weight percent")
+    co2: float = Field(0.0, ge=0, le=1, description="CO2 mole fraction")
+    h2s: float = Field(0.0, ge=0, le=1, description="H2S mole fraction")
+    n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
+    h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
+    p_res: Optional[float] = Field(None, gt=0, description="Reservoir pressure for water balance")
+    degf_res: Optional[float] = Field(None, description="Reservoir temperature for water balance")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
+
+
+class GasFWSSGRequest(BaseModel):
+    """Request model for free-water-saturated gas SG calculation."""
+
+    sg_g: float = Field(..., gt=0, le=3, description="Separator gas SG (relative to air)")
+    cgr: float = Field(..., ge=0, description="Condensate-gas ratio (stb/MMscf | sm3/sm3)")
+    api_st: float = Field(..., gt=0, le=100, description="Stock tank liquid API gravity")
+    metric: bool = Field(False, description="Use metric units")
+
+
+class GasDmpRequest(BaseModel):
+    """Request model for delta-pseudopressure calculation."""
+
+    p1: float = Field(..., gt=0, description="Starting (lower) pressure (psia | barsa)")
+    p2: float = Field(..., gt=0, description="Ending (upper) pressure (psia | barsa)")
+    degf: float = Field(..., description="Temperature (deg F | deg C)")
+    sg: float = Field(..., ge=0.5, le=2.0, description="Gas specific gravity (air=1)")
+    h2s: float = Field(0.0, ge=0, le=1, description="H2S mole fraction")
+    co2: float = Field(0.0, ge=0, le=1, description="CO2 mole fraction")
+    n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
+    h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
+    zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field("DAK", description="Z-factor method")
+    cmethod: Literal["PMC", "SUT", "BUR"] = Field("PMC", description="Critical properties method")
+    metric: bool = Field(False, description="Use metric units")
+
+
+class GasPVTRequest(BaseModel):
+    """Request model for GasPVT object creation and evaluation."""
+
+    sg: float = Field(0.75, ge=0.5, le=2.0, description="Gas specific gravity (air=1)")
+    co2: float = Field(0.0, ge=0, le=1, description="CO2 mole fraction")
+    h2s: float = Field(0.0, ge=0, le=1, description="H2S mole fraction")
+    n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
+    h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
+    zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field("DAK", description="Z-factor method")
+    cmethod: Literal["PMC", "SUT", "BUR"] = Field("PMC", description="Critical properties method")
+    pressures: List[float] = Field(..., description="Pressures to evaluate (psia | barsa)")
+    temperature: float = Field(..., description="Temperature (deg F | deg C)")
+    metric: bool = Field(False, description="Use metric units")
+
+    @field_validator("pressures")
+    @classmethod
+    def validate_pressures(cls, v):
+        if not all(p > 0 for p in v):
+            raise ValueError("All pressure values must be positive")
+        return v

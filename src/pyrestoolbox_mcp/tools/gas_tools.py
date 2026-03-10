@@ -20,6 +20,10 @@ from ..models.gas_models import (
     GasSGFromGradientRequest,
     GasWaterContentRequest,
     GasSGFromCompositionRequest,
+    GasHydrateRequest,
+    GasFWSSGRequest,
+    GasDmpRequest,
+    GasPVTRequest,
 )
 
 
@@ -114,6 +118,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -205,6 +210,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             cmethod=method_enum,
+            metric=request.metric,
         )
 
         return {
@@ -295,6 +301,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -387,6 +394,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -484,6 +492,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -577,6 +586,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -686,6 +696,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -784,6 +795,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             co2=request.co2,
             n2=request.n2,
             zmethod=method_enum,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -879,6 +891,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             p=request.p,
             zmethod='DAK',
             cmethod='PMC',
+            metric=request.metric,
         )
 
         value = float(sg)
@@ -963,6 +976,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
         wc = gas.gas_water_content(
             p=request.p,
             degf=request.degf,
+            metric=request.metric,
         )
 
         # Convert numpy array to list for JSON serialization
@@ -1093,5 +1107,154 @@ def register_gas_tools(mcp: FastMCP) -> None:
             },
             "method": "Molecular weight weighted average",
             "units": "dimensionless (air=1)",
+            "inputs": request.model_dump(),
+        }
+
+    @mcp.tool()
+    def gas_hydrate_prediction(request: GasHydrateRequest) -> dict:
+        """Predict gas hydrate formation conditions, water balance, and inhibitor requirements.
+
+        **FLOW ASSURANCE TOOL** - Evaluates hydrate formation risk at operating conditions.
+        Returns hydrate formation temperature/pressure, subcooling margin, and inhibitor effects.
+
+        **Parameters:**
+        - **p** (float, required): Operating pressure (psia | barsa).
+        - **degf** (float, required): Operating temperature (deg F | deg C).
+        - **sg** (float, required): Gas specific gravity (air=1).
+        - **method** (str, optional, default="TOWLER"): Hydrate prediction method.
+        - **inhibitor_type** (str, optional): Inhibitor: "MEOH", "MEG", "DEG", "TEG".
+        - **inhibitor_wt_pct** (float, optional): Inhibitor weight percent.
+        - **co2, h2s, n2, h2** (float, optional): Contaminant mole fractions.
+        - **p_res** (float, optional): Reservoir pressure for water balance.
+        - **degf_res** (float, optional): Reservoir temperature for water balance.
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** Hydrate formation temperature/pressure, subcooling, and zone status.
+        """
+        result = gas.gas_hydrate(
+            p=request.p, degf=request.degf, sg=request.sg,
+            hydmethod=request.method,
+            inhibitor_type=request.inhibitor_type,
+            inhibitor_wt_pct=request.inhibitor_wt_pct,
+            co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2,
+            p_res=request.p_res, degf_res=request.degf_res,
+            metric=request.metric,
+        )
+        response = {
+            "hft": float(result.hft),
+            "hfp": float(result.hfp),
+            "subcooling": float(result.subcooling),
+            "in_hydrate_zone": bool(result.in_hydrate_zone),
+            "method": request.method,
+            "units": {"temperature": "degC" if request.metric else "degF",
+                      "pressure": "barsa" if request.metric else "psia"},
+            "inputs": request.model_dump(),
+        }
+        return response
+
+    @mcp.tool()
+    def gas_fws_sg(request: GasFWSSGRequest) -> dict:
+        """Estimate free-water-saturated gas specific gravity from separator data.
+
+        **GAS CHARACTERIZATION TOOL** - Calculates the SG of gas-condensate from
+        separator gas SG, condensate-gas ratio, and stock tank API. Uses Standing
+        correlation for condensate MW estimation.
+
+        **Parameters:**
+        - **sg_g** (float, required): Separator gas SG (relative to air).
+        - **cgr** (float, required): Condensate-gas ratio (stb/MMscf | sm3/sm3).
+        - **api_st** (float, required): Stock tank liquid API gravity.
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** FWS gas specific gravity.
+        """
+        result = gas.gas_fws_sg(
+            sg_g=request.sg_g, cgr=request.cgr,
+            api_st=request.api_st, metric=request.metric,
+        )
+        return {
+            "fws_gas_sg": float(result),
+            "method": "Standing correlation",
+            "units": "dimensionless (air=1)",
+            "inputs": request.model_dump(),
+        }
+
+    @mcp.tool()
+    def gas_delta_pseudopressure(request: GasDmpRequest) -> dict:
+        """Calculate delta-pseudopressure between two pressures.
+
+        **GAS FLOW ANALYSIS TOOL** - Numerically integrates the real-gas pseudopressure
+        between two pressures. Returns integral of 2p/(mu*Z) dp from p1 to p2.
+
+        **Parameters:**
+        - **p1** (float, required): Starting (lower) pressure (psia | barsa).
+        - **p2** (float, required): Ending (upper) pressure (psia | barsa).
+        - **degf** (float, required): Temperature (deg F | deg C).
+        - **sg** (float, required): Gas specific gravity.
+        - **h2s, co2, n2, h2** (float, optional): Contaminant mole fractions.
+        - **zmethod** (str, optional, default="DAK"): Z-factor method.
+        - **cmethod** (str, optional, default="PMC"): Critical properties method.
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** Delta m(p) in psi²/cP (or bar²/cP if metric).
+        """
+        z_enum = getattr(z_method, request.zmethod)
+        c_enum = getattr(c_method, request.cmethod)
+        result = gas.gas_dmp(
+            p1=request.p1, p2=request.p2, degf=request.degf, sg=request.sg,
+            zmethod=z_enum, cmethod=c_enum,
+            co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2,
+            metric=request.metric,
+        )
+        unit = "bar²/cP" if request.metric else "psi²/cP"
+        return {
+            "delta_pseudopressure": float(result),
+            "units": unit,
+            "inputs": request.model_dump(),
+        }
+
+    @mcp.tool()
+    def create_gas_pvt(request: GasPVTRequest) -> dict:
+        """Create a gas PVT object and compute properties at specified conditions.
+
+        **GAS PVT CHARACTERIZATION TOOL** - Creates a reusable gas PVT object
+        storing composition and method choices. Computes Z-factor, FVF, density,
+        and viscosity at each pressure/temperature point.
+
+        **Parameters:**
+        - **sg** (float, optional, default=0.75): Gas specific gravity.
+        - **co2, h2s, n2, h2** (float, optional): Contaminant mole fractions.
+        - **zmethod** (str, optional, default="DAK"): Z-factor method.
+        - **cmethod** (str, optional, default="PMC"): Critical properties method.
+        - **pressures** (list[float], required): Pressures to evaluate (psia | barsa).
+        - **temperature** (float, required): Temperature (deg F | deg C).
+        - **metric** (bool, optional, default=false): Use metric units.
+
+        **Returns:** Z-factor, Bg, density, and viscosity at each pressure.
+        """
+        gpvt = gas.GasPVT(
+            sg=request.sg, co2=request.co2, h2s=request.h2s,
+            n2=request.n2, h2=request.h2,
+            zmethod=request.zmethod, cmethod=request.cmethod,
+            metric=request.metric,
+        )
+        results = []
+        for p in request.pressures:
+            results.append({
+                "pressure": p,
+                "z_factor": float(gpvt.z(p, request.temperature)),
+                "bg": float(gpvt.bg(p, request.temperature)),
+                "density": float(gpvt.density(p, request.temperature)),
+                "viscosity": float(gpvt.viscosity(p, request.temperature)),
+            })
+        p_unit = "barsa" if request.metric else "psia"
+        return {
+            "gas_pvt_properties": results,
+            "units": {
+                "pressure": p_unit,
+                "bg": "rm3/sm3" if request.metric else "rcf/scf",
+                "density": "kg/m3" if request.metric else "lb/cuft",
+                "viscosity": "cP",
+            },
             "inputs": request.model_dump(),
         }

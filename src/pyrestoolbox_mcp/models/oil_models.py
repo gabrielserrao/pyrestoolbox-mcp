@@ -33,6 +33,7 @@ class BubblePointRequest(BaseModel):
     method: Literal["STAN", "VALMC", "VELAR"] = Field(
         "VALMC", description="Calculation method (VALMC recommended)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class SolutionGORRequest(BaseModel):
@@ -55,6 +56,7 @@ class SolutionGORRequest(BaseModel):
     method: Literal["VELAR", "STAN", "VALMC"] = Field(
         "VELAR", description="Calculation method"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -92,6 +94,7 @@ class OilFVFRequest(BaseModel):
     method: Literal["MCAIN", "STAN"] = Field(
         "MCAIN", description="Calculation method (MCAIN recommended)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs")
     @classmethod
@@ -124,6 +127,7 @@ class OilViscosityRequest(BaseModel):
         0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
     )
     method: Literal["BR"] = Field("BR", description="Calculation method")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs")
     @classmethod
@@ -157,6 +161,7 @@ class OilDensityRequest(BaseModel):
     bo: Union[float, List[float]] = Field(
         ..., description="Oil FVF (rb/stb) - scalar or array"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs", "bo")
     @classmethod
@@ -191,6 +196,7 @@ class OilCompressibilityRequest(BaseModel):
     rsb: float = Field(
         0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs")
     @classmethod
@@ -283,6 +289,7 @@ class BlackOilTableRequest(BaseModel):
     bo_method: Literal["MCAIN", "STAN"] = Field(
         "MCAIN", description="Oil FVF method")
     uo_method: Literal["BR"] = Field("BR", description="Oil viscosity method")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class EvolvedGasSGRequest(BaseModel):
@@ -296,6 +303,7 @@ class EvolvedGasSGRequest(BaseModel):
     p: Union[float, List[float]] = Field(
         ..., description="Pressure (psia) - scalar or array")
     psep: float = Field(100.0, gt=0, description="Separator pressure (psia)")
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
     @classmethod
@@ -335,6 +343,7 @@ class TwuPropertiesRequest(BaseModel):
     damp: float = Field(
         0.0, ge=0, le=1, description="Damping factor (0-1)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
 class WeightedAverageGasSGRequest(BaseModel):
@@ -364,3 +373,44 @@ class CheckGasSGsRequest(BaseModel):
     rst: float = Field(..., ge=0, description="Stock tank GOR (scf/stb)")
     rsp: float = Field(..., ge=0, description="Separator GOR (scf/stb)")
     sg_st: float = Field(..., gt=0, description="Stock tank gas SG")
+
+
+class OilHarmonizeRequest(BaseModel):
+    """Request model for oil PVT harmonization."""
+
+    pb: float = Field(0.0, ge=0, description="Bubble point pressure (psia | barsa)")
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at Pb (scf/stb | sm3/sm3)")
+    degf: float = Field(0.0, description="Reservoir temperature (deg F | deg C)")
+    api: float = Field(0.0, ge=0, le=100, description="Stock tank oil API gravity")
+    sg_sp: float = Field(0.0, ge=0, le=3, description="Separator gas SG")
+    sg_g: float = Field(0.0, ge=0, le=3, description="Weighted average surface gas SG")
+    uo_target: float = Field(0.0, ge=0, description="Target viscosity at p_uo (cP)")
+    p_uo: float = Field(0.0, ge=0, description="Pressure where viscosity is known (psia)")
+    rs_method: Literal["VELAR", "STAN", "VALMC"] = Field("VELAR", description="Solution GOR method")
+    pb_method: Literal["STAN", "VALMC", "VELAR"] = Field("VELAR", description="Bubble point method")
+    metric: bool = Field(False, description="Use metric units")
+
+
+class OilPVTRequest(BaseModel):
+    """Request model for OilPVT object creation and evaluation."""
+
+    api: float = Field(..., gt=0, le=100, description="Stock tank oil API gravity")
+    sg_sp: float = Field(..., gt=0, le=3, description="Separator gas SG")
+    pb: float = Field(..., gt=0, description="Bubble point pressure (psia | barsa)")
+    temperature: float = Field(..., description="Reservoir temperature (deg F | deg C)")
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at Pb. 0 = auto-calculate")
+    sg_g: float = Field(0.0, ge=0, le=3, description="Weighted average gas SG")
+    uo_target: float = Field(0.0, ge=0, description="Target viscosity (cP)")
+    p_uo: float = Field(0.0, ge=0, description="Pressure of target viscosity (psia)")
+    rs_method: Literal["VELAR", "STAN", "VALMC"] = Field("VELAR", description="Solution GOR method")
+    pb_method: Literal["STAN", "VALMC", "VELAR"] = Field("VALMC", description="Bubble point method")
+    bo_method: Literal["MCAIN", "STAN"] = Field("MCAIN", description="Oil FVF method")
+    pressures: List[float] = Field(..., description="Pressures to evaluate (psia | barsa)")
+    metric: bool = Field(False, description="Use metric units")
+
+    @field_validator("pressures")
+    @classmethod
+    def validate_pressures(cls, v):
+        if not all(p > 0 for p in v):
+            raise ValueError("All pressure values must be positive")
+        return v

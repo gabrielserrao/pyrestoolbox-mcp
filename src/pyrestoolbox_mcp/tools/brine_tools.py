@@ -31,16 +31,11 @@ def register_brine_tools(mcp: FastMCP) -> None:
           Typical: 0-0.1. Example: 0.03 for 3% CO2 saturation.
 
         **Properties Calculated:**
-        - **Density (ρw):** Brine density in lb/cuft. Increases with salinity, pressure.
-          Typical: 60-70 lb/cuft.
+        - **Density (ρw):** Brine density (lb/cuft field, kg/m3 metric). Increases with salinity, pressure.
         - **Viscosity (μw):** Brine viscosity in cP. Decreases with temperature, increases with salinity.
-          Typical: 0.3-1.5 cP.
-        - **Compressibility (cw):** Brine compressibility in 1/psi. Critical for aquifer influx.
-          Typical: 2e-6 to 5e-6 1/psi.
-        - **Formation Volume Factor (Bw):** Volume ratio rb/stb. Slightly > 1.0.
-          Typical: 1.01-1.05 rb/stb.
-        - **Solution GOR (Rw):** Gas dissolved in brine in scf/stb. Increases with pressure.
-          Typical: 0-20 scf/stb.
+        - **Compressibility (cw):** Brine compressibility (1/psi field, 1/bar metric). Critical for aquifer influx.
+        - **Formation Volume Factor (Bw):** Volume ratio (rb/stb field, rm3/sm3 metric). Slightly > 1.0.
+        - **Solution GOR (Rw):** Gas dissolved in brine (scf/stb field, sm3/sm3 metric). Increases with pressure.
 
         **Dissolved Gas Effects:**
         - **CH4-saturated:** Methane dissolved in formation water (typical in aquifers)
@@ -72,11 +67,13 @@ def register_brine_tools(mcp: FastMCP) -> None:
 
         **Returns:**
         Dictionary with:
-        - **formation_volume_factor_rb_stb** (float or list): Bw (matches input p shape)
-        - **density_lb_cuft** (float or list): Brine density (matches input p shape)
-        - **viscosity_cp** (float or list): Brine viscosity (matches input p shape)
-        - **compressibility_1_psi** (float or list): Brine compressibility (matches input p shape)
-        - **solution_gor_scf_stb** (float or list): Gas dissolved in brine (matches input p shape)
+        - **formation_volume_factor** (float or list): Bw (matches input p shape)
+        - **density** (float or list): Brine density (matches input p shape)
+        - **viscosity** (float or list): Brine viscosity (matches input p shape)
+        - **compressibility** (float or list): Brine compressibility (matches input p shape)
+        - **solution_gor** (float or list): Gas dissolved in brine (matches input p shape)
+        - **units** (dict): Unit labels for each property (adapts to metric flag)
+        - **unit_system** (str): "metric" or "field"
         - **method** (str): "Industry standard correlations"
         - **salinity_wt_percent** (float): Input salinity
         - **dissolved_gas_saturation** (float): Combined CH4+CO2 saturation
@@ -126,22 +123,33 @@ def register_brine_tools(mcp: FastMCP) -> None:
         # Convert numpy arrays to lists for JSON serialization
         bw, density, viscosity, compressibility, rw_gor = result
         
+        is_metric = request.metric
         response = {
-            "formation_volume_factor_rb_stb": (
+            "formation_volume_factor": (
                 bw.tolist() if isinstance(bw, np.ndarray) else float(bw)
             ),
-            "density_lb_cuft": (
+            "density": (
                 density.tolist() if isinstance(density, np.ndarray) else float(density)
             ),
-            "viscosity_cp": (
+            "viscosity": (
                 viscosity.tolist() if isinstance(viscosity, np.ndarray) else float(viscosity)
             ),
-            "compressibility_1_psi": (
+            "compressibility": (
                 compressibility.tolist() if isinstance(compressibility, np.ndarray) else float(compressibility)
             ),
-            "solution_gor_scf_stb": (
+            "solution_gor": (
                 rw_gor.tolist() if isinstance(rw_gor, np.ndarray) else float(rw_gor)
             ),
+            "units": {
+                "formation_volume_factor": "rm3/sm3" if is_metric else "rb/stb",
+                "density": "kg/m3" if is_metric else "lb/cuft",
+                "viscosity": "cP",
+                "compressibility": "1/bar" if is_metric else "1/psi",
+                "solution_gor": "sm3/sm3" if is_metric else "scf/stb",
+                "pressure": "barsa" if is_metric else "psia",
+                "temperature": "degC" if is_metric else "degF",
+            },
+            "unit_system": "metric" if is_metric else "field",
             "method": "Industry standard correlations",
             "salinity_wt_percent": request.wt,
             "dissolved_gas_saturation": ch4_saturation,

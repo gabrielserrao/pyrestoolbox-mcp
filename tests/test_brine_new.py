@@ -45,3 +45,7 @@ async def test_brine_properties_with_metric(mcp_client):
     result = result.data
     assert "formation_volume_factor" in result
     assert "density" in result
+    assert "units" in result
+    assert result["unit_system"] == "metric"
+    assert result["units"]["density"] == "kg/m3"
+    assert result["units"]["formation_volume_factor"] == "rm3/sm3"

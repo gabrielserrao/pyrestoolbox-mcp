@@ -15,6 +15,7 @@ class ZFactorRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     method: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Calculation method (DAK recommended)"
     )
@@ -42,8 +43,10 @@ class CriticalPropertiesRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
-    method: Literal["PMC", "SUT", "BUR"] = Field(
-        "PMC", description="Calculation method (PMC recommended)"
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
+    method: Literal["PMC", "SUT", "BUR", "BNS"] = Field(
+        "PMC",
+        description="Calculation method (PMC recommended for HC gases, BUR/BNS for high non-HC content)",
     )
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
@@ -59,6 +62,7 @@ class GasFVFRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -88,6 +92,7 @@ class GasViscosityRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -117,6 +122,7 @@ class GasDensityRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -146,6 +152,7 @@ class GasCompressibilityRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -180,6 +187,7 @@ class GasPseudopressureRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -197,6 +205,7 @@ class GasPressureFromPZRequest(BaseModel):
     h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
     co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
     n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
+    h2: float = Field(0.0, ge=0.0, le=1.0, description="H2 mole fraction (dimensionless)")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field(
         "DAK", description="Z-factor calculation method"
     )
@@ -309,7 +318,9 @@ class GasDmpRequest(BaseModel):
     n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
     h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field("DAK", description="Z-factor method")
-    cmethod: Literal["PMC", "SUT", "BUR"] = Field("PMC", description="Critical properties method")
+    cmethod: Literal["PMC", "SUT", "BUR", "BNS"] = Field(
+        "PMC", description="Critical properties method"
+    )
     metric: bool = Field(False, description="Use metric units")
 
 
@@ -322,7 +333,9 @@ class GasPVTRequest(BaseModel):
     n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
     h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
     zmethod: Literal["DAK", "HY", "WYW", "BUR"] = Field("DAK", description="Z-factor method")
-    cmethod: Literal["PMC", "SUT", "BUR"] = Field("PMC", description="Critical properties method")
+    cmethod: Literal["PMC", "SUT", "BUR", "BNS"] = Field(
+        "PMC", description="Critical properties method"
+    )
     pressures: List[float] = Field(..., description="Pressures to evaluate (psia | barsa)")
     temperature: float = Field(..., description="Temperature (deg F | deg C)")
     metric: bool = Field(False, description="Use metric units")

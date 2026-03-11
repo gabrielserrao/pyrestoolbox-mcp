@@ -62,7 +62,7 @@
     \large Quick Reference for Reservoir Engineering Calculations
 }
 \author{Gabriel Serrão Seabra}
-\date{\today \\ \vspace{0.5cm} Version 2.0}
+\date{\today \\ \vspace{0.5cm} Version 2.1}
 
 \begin{document}
 
@@ -494,6 +494,34 @@ where:
 \symitem{$\epsilon_P$}{Pressure correction}
 \end{itemize}
 
+\subsubsection{Burgoyne-Nielsen-Stanko (2025) Methods - BUR / BNS}
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{BUR} and \textbf{BNS} are EOS-based critical property methods from SPE-229932-MS. They handle arbitrary mixtures of hydrocarbons with CO$_2$, H$_2$S, N$_2$, and H$_2$, including pure non-hydrocarbon streams.
+
+\begin{itemize}
+\item \textbf{BUR}: 5-component Peng-Robinson EOS with tuned binary interaction parameters
+\item \textbf{BNS}: Companion method with different mixing rule calibration
+\end{itemize}
+
+Both methods compute pseudo-critical properties directly from the EOS framework rather than using empirical correlations, making them suitable for:
+\begin{itemize}
+\item 100\% CO$_2$ or high CO$_2$ streams
+\item Hydrogen mixtures (any concentration)
+\item Acid gas mixtures (high H$_2$S + CO$_2$)
+\end{itemize}
+
+\textbf{Reference:} SPE-229932-MS (ADIPEC 2025)
+\end{tcolorbox}
+
+\textbf{Method Comparison:}
+\begin{itemize}
+\item \textbf{PMC}: Best for hydrocarbon gases with low non-HC content
+\item \textbf{SUT}: Classical Sutton (1985) correlation
+\item \textbf{BUR}: Universal EOS-based, high non-HC content
+\item \textbf{BNS}: Alternative EOS calibration, complements BUR
+\end{itemize}
+
 \subsection{Gas Formation Volume Factor ($B_g$)}
 
 \subsubsection{Description}
@@ -838,6 +866,58 @@ k_{rg} = k_{rg}^{max} \times \frac{(S_g^*)^{L_g}}{(S_g^*)^{L_g} + E_g (1 - S_g^*
 \item Independent control of endpoint behavior
 \item Smooth transitions
 \end{itemize}
+
+\subsection{Jerauld Correlation (2003)}
+
+\subsubsection{Description}
+Two-parameter ($a$, $b$) model for relative permeability curves. Simpler than LET but more flexible than Corey, with asymmetric curve shapes.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Jerauld Relative Permeability:}
+\begin{equation}
+k_r(S^*) = \frac{(S^*)^a}{(S^*)^a + b \cdot (1 - S^*)^a}
+\end{equation}
+
+\textbf{Normalized Saturation:}
+\begin{equation}
+S^* = \frac{S_w - S_{wc}}{1 - S_{wc} - S_{or}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$a$}{Shape parameter controlling curve curvature}
+\symitem{$b$}{Asymmetry parameter controlling curve position}
+\symitem{$S^*$}{Normalized saturation}
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+\item Only two parameters (simpler than LET's three per phase)
+\item Can produce asymmetric S-shaped curves
+\item Useful for fitting residual saturation zones
+\end{itemize}
+
+\subsection{Relative Permeability Fitting}
+
+\subsubsection{Description}
+pyResToolbox provides automated fitting of laboratory relative permeability data to Corey, LET, and Jerauld curve families.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Available Fitting Tools:}
+\begin{itemize}
+\item \texttt{fit\_relative\_permeability} --- fit data to a specified model (Corey, LET, or Jerauld)
+\item \texttt{fit\_relative\_permeability\_best} --- automatically compare all models and select the best fit
+\item \texttt{check\_let\_physical} --- verify LET parameters produce physically reasonable curves
+\item \texttt{evaluate\_jerauld} --- evaluate Jerauld model at given saturations
+\end{itemize}
+
+\textbf{Fitting Objective:} Minimize sum of squared errors between measured $k_r$ and model prediction:
+\begin{equation}
+\text{SSE} = \sum_{i=1}^{N} \left( k_{r,\text{measured}}(S_i) - k_{r,\text{model}}(S_i; \theta) \right)^2
+\end{equation}
+where $\theta$ represents the model parameters ($n$ for Corey; $L,E,T$ for LET; $a,b$ for Jerauld).
+\end{tcolorbox}
 
 \newpage
 
@@ -2070,15 +2150,34 @@ Parameters are ranked by $S_i$ to identify the most influential inputs.
 \subsubsection{Description}
 The Soreide \& Whitson (1992) model uses a modified Peng-Robinson equation of state with special mixing rules for the water--hydrocarbon system, enabling calculation of gas solubility in brine, densities, viscosities, and formation volume factors at reservoir conditions.
 
+The pyResToolbox implementation extends the original framework with:
+\begin{itemize}
+\item \textbf{Multi-gas support:} CO$_2$, H$_2$S, N$_2$, H$_2$ as explicit gas-phase mole fractions
+\item \textbf{Sechenov salting-out corrections} for each dissolved gas species
+\item \textbf{Calibrated per-gas viscosity corrections}
+\item \textbf{IAPWS-IF97 Region 1} freshwater density (34-term Gibbs function)
+\item \textbf{Spivey/McCain} salinity correction applied multiplicatively
+\item \textbf{Garcia apparent molar volumes} (Plyasunov) for dissolved gas density effects
+\end{itemize}
+
 \begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Peng-Robinson EOS:}
+\begin{equation}
+P = \frac{RT}{V - b} - \frac{a(T)}{V(V+b) + b(V-b)}
+\end{equation}
+
+\textbf{Fugacity Equilibrium:}
+\begin{equation}
+f_i^L(T, P, \mathbf{x}) = f_i^V(T, P, \mathbf{y}) \quad \text{for each component } i
+\end{equation}
+
 \textbf{Key Outputs:}
 \begin{itemize}
-\item Solution GOR by component (CO$_2$, H$_2$S, N$_2$, H$_2$, hydrocarbon)
+\item Per-component solubility in brine (CO$_2$, H$_2$S, N$_2$, H$_2$, HC)
 \item Total solution GOR
-\item Brine and gas phase densities
-\item Brine and gas phase viscosities
-\item Formation volume factors
+\item Brine and gas phase densities, viscosities, FVF
 \item Water content in gas phase
+\item Compressibility
 \end{itemize}
 \end{tcolorbox}
 
@@ -2204,6 +2303,7 @@ Z-Factor & DAK & Most accurate, industry standard \\
 Critical Props & PMC & Best accuracy, accounts for non-HCs \\
  & SUT & Classic method, compatibility \\
  & BUR & High non-hydrocarbon content \\
+ & BNS & Alternative EOS calibration, complements BUR \\
 \midrule
 Viscosity & LGE & Industry standard \\
 \bottomrule
@@ -2226,6 +2326,9 @@ Corey & Quick estimates & Simple, fast, widely used \\
 LET & History matching & Flexible curve shapes \\
  & Complex systems & Better fit to lab data \\
  & Final models & Independent endpoint control \\
+\midrule
+Jerauld & Intermediate & Two parameters, simpler than LET \\
+ & Asymmetric curves & Better than Corey for S-shaped curves \\
 \bottomrule
 \end{tabular}
 \caption{Relative Permeability Method Selection}
@@ -2579,6 +2682,7 @@ $\beta$ & - & Dykstra-Parsons coefficient \\
 $y_{CO_2}$ & fraction & CO$_2$ mole fraction \\
 $y_{H_2S}$ & fraction & H$_2$S mole fraction \\
 $y_{N_2}$ & fraction & N$_2$ mole fraction \\
+$y_{H_2}$ & fraction & H$_2$ (hydrogen) mole fraction \\
 
 % Geomechanics Stresses
 $\sigma_v$ & psi & Vertical (overburden) stress \\

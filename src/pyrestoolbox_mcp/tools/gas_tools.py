@@ -117,6 +117,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -209,6 +210,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             cmethod=method_enum,
             metric=request.metric,
         )
@@ -300,6 +302,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -393,6 +396,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -491,6 +495,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -585,6 +590,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -695,6 +701,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -794,6 +801,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )

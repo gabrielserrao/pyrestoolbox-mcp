@@ -1,7 +1,7 @@
 """Pydantic models for Inflow Performance calculations."""
 
 from pydantic import BaseModel, Field, field_validator
-from typing import Literal, Union, List, Optional
+from typing import Union, List
 
 
 class OilRateRadialRequest(BaseModel):
@@ -10,12 +10,8 @@ class OilRateRadialRequest(BaseModel):
     pi: float = Field(..., gt=0, description="Initial reservoir pressure (psia)")
     pb: float = Field(..., ge=0, description="Bubble point pressure (psia)")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    sg_g: float = Field(..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     psd: Union[float, List[float]] = Field(
         ..., description="Sandface pressure (psia) - scalar or array"
     )
@@ -24,9 +20,7 @@ class OilRateRadialRequest(BaseModel):
     s: float = Field(0.0, description="Skin factor (dimensionless)")
     re: float = Field(..., gt=0, description="Drainage radius (ft)")
     rw: float = Field(..., gt=0, description="Wellbore radius (ft)")
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
     vogel: bool = Field(
         False, description="Use Vogel IPR for reservoir pressure below bubble point"
     )
@@ -58,12 +52,8 @@ class OilRateLinearRequest(BaseModel):
     pi: float = Field(..., gt=0, description="Initial reservoir pressure (psia)")
     pb: float = Field(..., ge=0, description="Bubble point pressure (psia)")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    sg_g: float = Field(..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     psd: Union[float, List[float]] = Field(
         ..., description="Sandface pressure (psia) - scalar or array"
     )
@@ -71,9 +61,7 @@ class OilRateLinearRequest(BaseModel):
     k: float = Field(..., gt=0, description="Permeability (mD)")
     area: float = Field(..., gt=0, description="Drainage area (sq ft)")
     length: float = Field(..., gt=0, description="Well length (ft)")
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
 
     @field_validator("psd")
     @classmethod
@@ -95,9 +83,7 @@ class GasRateRadialRequest(BaseModel):
     sg: float = Field(
         ..., ge=0.5, le=2.0, description="Gas specific gravity (air=1, dimensionless)"
     )
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
     psd: Union[float, List[float]] = Field(
         ..., description="Sandface pressure (psia) - scalar or array"
     )
@@ -106,15 +92,9 @@ class GasRateRadialRequest(BaseModel):
     s: float = Field(0.0, description="Skin factor (dimensionless)")
     re: float = Field(..., gt=0, description="Drainage radius (ft)")
     rw: float = Field(..., gt=0, description="Wellbore radius (ft)")
-    h2s: float = Field(
-        0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)"
-    )
-    co2: float = Field(
-        0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)"
-    )
-    n2: float = Field(
-        0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)"
-    )
+    h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
+    co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
+    n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
 
     @field_validator("psd")
     @classmethod
@@ -144,9 +124,7 @@ class GasRateLinearRequest(BaseModel):
     sg: float = Field(
         ..., ge=0.5, le=2.0, description="Gas specific gravity (air=1, dimensionless)"
     )
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
     psd: Union[float, List[float]] = Field(
         ..., description="Sandface pressure (psia) - scalar or array"
     )
@@ -154,15 +132,9 @@ class GasRateLinearRequest(BaseModel):
     k: float = Field(..., gt=0, description="Permeability (mD)")
     area: float = Field(..., gt=0, description="Drainage area (sq ft)")
     length: float = Field(..., gt=0, description="Well length (ft)")
-    h2s: float = Field(
-        0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)"
-    )
-    co2: float = Field(
-        0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)"
-    )
-    n2: float = Field(
-        0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)"
-    )
+    h2s: float = Field(0.0, ge=0.0, le=1.0, description="H2S mole fraction (dimensionless)")
+    co2: float = Field(0.0, ge=0.0, le=1.0, description="CO2 mole fraction (dimensionless)")
+    n2: float = Field(0.0, ge=0.0, le=1.0, description="N2 mole fraction (dimensionless)")
 
     @field_validator("psd")
     @classmethod

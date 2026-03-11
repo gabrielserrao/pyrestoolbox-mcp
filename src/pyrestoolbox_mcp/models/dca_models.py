@@ -7,7 +7,9 @@ from typing import Literal, Union, List, Optional
 class FitDeclineRequest(BaseModel):
     """Request model for decline curve fitting to rate vs time data."""
 
-    time: List[float] = Field(..., description="Time array (user-defined units, e.g. months or years)")
+    time: List[float] = Field(
+        ..., description="Time array (user-defined units, e.g. months or years)"
+    )
     rates: List[float] = Field(..., description="Production rate array (must be > 0)")
     method: Literal["exponential", "harmonic", "hyperbolic", "duong", "best"] = Field(
         "best", description="Decline model to fit. 'best' tries all and returns highest R-squared"
@@ -26,9 +28,7 @@ class FitDeclineRequest(BaseModel):
 class FitDeclineCumRequest(BaseModel):
     """Request model for decline curve fitting to rate vs cumulative data."""
 
-    cumulative_production: List[float] = Field(
-        ..., description="Cumulative production array"
-    )
+    cumulative_production: List[float] = Field(..., description="Cumulative production array")
     rates: List[float] = Field(..., description="Production rate array (must be > 0)")
     method: Literal["exponential", "harmonic", "hyperbolic", "best"] = Field(
         "best", description="Decline model to fit"
@@ -133,9 +133,7 @@ class DuongRateRequest(BaseModel):
 class FitRatioRequest(BaseModel):
     """Request model for GOR/WOR ratio model fitting."""
 
-    x: List[float] = Field(
-        ..., description="Independent variable (cumulative production or time)"
-    )
+    x: List[float] = Field(..., description="Independent variable (cumulative production or time)")
     ratio: List[float] = Field(..., description="Ratio values (e.g. GOR, WOR)")
     method: Literal["linear", "exponential", "power", "logistic", "best"] = Field(
         "best", description="Ratio model to fit"
@@ -154,9 +152,5 @@ class RatioForecastRequest(BaseModel):
     a: float = Field(..., description="Primary parameter")
     b: float = Field(..., description="Secondary parameter")
     c: float = Field(0.0, description="Tertiary parameter (logistic only)")
-    x: Union[float, List[float]] = Field(
-        ..., description="Values to evaluate at"
-    )
-    domain: Literal["cum", "time"] = Field(
-        "cum", description="Domain type"
-    )
+    x: Union[float, List[float]] = Field(..., description="Values to evaluate at")
+    domain: Literal["cum", "time"] = Field("cum", description="Domain type")

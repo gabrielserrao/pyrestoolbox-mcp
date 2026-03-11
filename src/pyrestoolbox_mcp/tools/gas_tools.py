@@ -117,6 +117,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -209,6 +210,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             cmethod=method_enum,
             metric=request.metric,
         )
@@ -300,6 +302,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -393,6 +396,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -491,6 +495,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -585,6 +590,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -695,6 +701,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -794,6 +801,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
             h2s=request.h2s,
             co2=request.co2,
             n2=request.n2,
+            h2=request.h2,
             zmethod=method_enum,
             metric=request.metric,
         )
@@ -889,8 +897,8 @@ def register_gas_tools(mcp: FastMCP) -> None:
             grad=request.grad,
             degf=request.degf,
             p=request.p,
-            zmethod='DAK',
-            cmethod='PMC',
+            zmethod="DAK",
+            cmethod="PMC",
             metric=request.metric,
         )
 
@@ -1084,11 +1092,7 @@ def register_gas_tools(mcp: FastMCP) -> None:
         the average MW of the hydrocarbon fraction, not individual component MW.
         """
         sg = gas.gas_sg(
-            hc_mw=request.hc_mw,
-            co2=request.co2,
-            h2s=request.h2s,
-            n2=request.n2,
-            h2=request.h2
+            hc_mw=request.hc_mw, co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2
         )
 
         # Calculate composition details
@@ -1132,12 +1136,18 @@ def register_gas_tools(mcp: FastMCP) -> None:
         **Returns:** Hydrate formation temperature/pressure, subcooling, and zone status.
         """
         result = gas.gas_hydrate(
-            p=request.p, degf=request.degf, sg=request.sg,
+            p=request.p,
+            degf=request.degf,
+            sg=request.sg,
             hydmethod=request.method,
             inhibitor_type=request.inhibitor_type,
             inhibitor_wt_pct=request.inhibitor_wt_pct,
-            co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2,
-            p_res=request.p_res, degf_res=request.degf_res,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
+            p_res=request.p_res,
+            degf_res=request.degf_res,
             metric=request.metric,
         )
         response = {
@@ -1146,8 +1156,10 @@ def register_gas_tools(mcp: FastMCP) -> None:
             "subcooling": float(result.subcooling),
             "in_hydrate_zone": bool(result.in_hydrate_zone),
             "method": request.method,
-            "units": {"temperature": "degC" if request.metric else "degF",
-                      "pressure": "barsa" if request.metric else "psia"},
+            "units": {
+                "temperature": "degC" if request.metric else "degF",
+                "pressure": "barsa" if request.metric else "psia",
+            },
             "inputs": request.model_dump(),
         }
         return response
@@ -1169,8 +1181,10 @@ def register_gas_tools(mcp: FastMCP) -> None:
         **Returns:** FWS gas specific gravity.
         """
         result = gas.gas_fws_sg(
-            sg_g=request.sg_g, cgr=request.cgr,
-            api_st=request.api_st, metric=request.metric,
+            sg_g=request.sg_g,
+            cgr=request.cgr,
+            api_st=request.api_st,
+            metric=request.metric,
         )
         return {
             "fws_gas_sg": float(result),
@@ -1201,9 +1215,16 @@ def register_gas_tools(mcp: FastMCP) -> None:
         z_enum = getattr(z_method, request.zmethod)
         c_enum = getattr(c_method, request.cmethod)
         result = gas.gas_dmp(
-            p1=request.p1, p2=request.p2, degf=request.degf, sg=request.sg,
-            zmethod=z_enum, cmethod=c_enum,
-            co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2,
+            p1=request.p1,
+            p2=request.p2,
+            degf=request.degf,
+            sg=request.sg,
+            zmethod=z_enum,
+            cmethod=c_enum,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
             metric=request.metric,
         )
         unit = "bar²/cP" if request.metric else "psi²/cP"
@@ -1233,20 +1254,26 @@ def register_gas_tools(mcp: FastMCP) -> None:
         **Returns:** Z-factor, Bg, density, and viscosity at each pressure.
         """
         gpvt = gas.GasPVT(
-            sg=request.sg, co2=request.co2, h2s=request.h2s,
-            n2=request.n2, h2=request.h2,
-            zmethod=request.zmethod, cmethod=request.cmethod,
+            sg=request.sg,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
+            zmethod=request.zmethod,
+            cmethod=request.cmethod,
             metric=request.metric,
         )
         results = []
         for p in request.pressures:
-            results.append({
-                "pressure": p,
-                "z_factor": float(gpvt.z(p, request.temperature)),
-                "bg": float(gpvt.bg(p, request.temperature)),
-                "density": float(gpvt.density(p, request.temperature)),
-                "viscosity": float(gpvt.viscosity(p, request.temperature)),
-            })
+            results.append(
+                {
+                    "pressure": p,
+                    "z_factor": float(gpvt.z(p, request.temperature)),
+                    "bg": float(gpvt.bg(p, request.temperature)),
+                    "density": float(gpvt.density(p, request.temperature)),
+                    "viscosity": float(gpvt.viscosity(p, request.temperature)),
+                }
+            )
         p_unit = "barsa" if request.metric else "psia"
         return {
             "gas_pvt_properties": results,

@@ -45,16 +45,19 @@ def register_dca_tools(mcp: FastMCP) -> None:
         ```
         """
         result = dca.fit_decline(
-            t=request.time, q=request.rates, method=request.method,
-            t_start=request.t_start, t_end=request.t_end,
+            t=request.time,
+            q=request.rates,
+            method=request.method,
+            t_start=request.t_start,
+            t_end=request.t_end,
         )
         return {
             "method": result.method,
             "qi": float(result.qi),
             "di": float(result.di),
             "b": float(result.b),
-            "a": float(result.a) if hasattr(result, 'a') and result.a is not None else None,
-            "m": float(result.m) if hasattr(result, 'm') and result.m is not None else None,
+            "a": float(result.a) if hasattr(result, "a") and result.a is not None else None,
+            "m": float(result.m) if hasattr(result, "m") and result.m is not None else None,
             "r_squared": float(result.r_squared),
         }
 
@@ -77,9 +80,12 @@ def register_dca_tools(mcp: FastMCP) -> None:
         **Returns:** Fitted parameters, R-squared, and method name.
         """
         result = dca.fit_decline_cum(
-            Np=request.cumulative_production, q=request.rates,
-            method=request.method, t_calendar=request.calendar_time,
-            Np_start=request.np_start, Np_end=request.np_end,
+            Np=request.cumulative_production,
+            q=request.rates,
+            method=request.method,
+            t_calendar=request.calendar_time,
+            Np_start=request.np_start,
+            Np_end=request.np_end,
         )
         return {
             "method": result.method,
@@ -123,8 +129,11 @@ def register_dca_tools(mcp: FastMCP) -> None:
         dr.uptime_mean = request.uptime
 
         fc = dca.forecast(
-            result=dr, t_end=request.t_end, dt=request.dt,
-            q_min=request.q_min, uptime=request.uptime,
+            result=dr,
+            t_end=request.t_end,
+            dt=request.dt,
+            q_min=request.q_min,
+            uptime=request.uptime,
         )
         return {
             "time": fc.t.tolist(),
@@ -230,14 +239,16 @@ def register_dca_tools(mcp: FastMCP) -> None:
         **Returns:** Fitted model type, parameters (a, b, c), R-squared, and domain.
         """
         result = dca.fit_ratio(
-            x=request.x, ratio=request.ratio,
-            method=request.method, domain=request.domain,
+            x=request.x,
+            ratio=request.ratio,
+            method=request.method,
+            domain=request.domain,
         )
         return {
             "method": result.method,
             "a": float(result.a),
             "b": float(result.b),
-            "c": float(result.c) if hasattr(result, 'c') and result.c is not None else 0.0,
+            "c": float(result.c) if hasattr(result, "c") and result.c is not None else 0.0,
             "r_squared": float(result.r_squared),
             "domain": result.domain,
         }

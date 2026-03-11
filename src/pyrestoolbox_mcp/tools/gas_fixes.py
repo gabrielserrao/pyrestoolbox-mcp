@@ -5,7 +5,6 @@ that have bugs in the original library. These implementations are standalone
 and don't rely on the buggy upstream code.
 """
 
-import numpy as np
 from pyrestoolbox.constants import R, degF2R, MW_AIR
 from pyrestoolbox.classes import z_method, c_method
 import pyrestoolbox.gas as gas
@@ -26,10 +25,10 @@ def gas_grad2sg_fixed(
     metric: bool = False,
 ) -> float:
     """Returns insitu gas specific gravity consistent with observed gas gradient.
-    
+
     Fixed version of gas_grad2sg that doesn't rely on buggy bisect_solve.
     Uses Newton-Raphson iteration instead of bisection.
-    
+
     Args:
         grad: Observed gas gradient (psi/ft)
         p: Pressure at observation (psia)
@@ -42,12 +41,12 @@ def gas_grad2sg_fixed(
         tc: Critical gas temperature (deg R)
         pc: Critical gas pressure (psia)
         rtol: Relative solution tolerance
-    
+
     Returns:
         Gas specific gravity (air = 1.0)
     """
     degR = degf + degF2R
-    
+
     def calc_gradient(sg):
         """Calculate gradient for a given gas SG."""
         m = sg * MW_AIR
@@ -66,23 +65,23 @@ def gas_grad2sg_fixed(
         )
         grad_calc = p * m / (zee * R * degR) / 144
         return grad_calc
-    
+
     # Newton-Raphson iteration
     sg_guess = 0.7  # Initial guess
     max_iter = 50
-    
+
     for i in range(max_iter):
         grad_calc = calc_gradient(sg_guess)
         error = abs((grad - grad_calc) / grad)
-        
+
         if error < rtol:
             return sg_guess
-        
+
         # Numerical derivative
         delta = 0.001
         grad_plus = calc_gradient(sg_guess + delta)
         derivative = (grad_plus - grad_calc) / delta
-        
+
         # Newton-Raphson update
         if abs(derivative) > 1e-10:
             sg_new = sg_guess - (grad_calc - grad) / derivative
@@ -95,8 +94,6 @@ def gas_grad2sg_fixed(
                 sg_guess *= 0.95
             else:
                 sg_guess *= 1.05
-    
+
     # Return best estimate even if not fully converged
     return sg_guess
-
-

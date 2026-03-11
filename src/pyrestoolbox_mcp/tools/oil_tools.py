@@ -2,7 +2,7 @@
 
 import numpy as np
 import pyrestoolbox.oil as oil
-from pyrestoolbox.classes import pb_method, rs_method, bo_method, uo_method
+from pyrestoolbox.classes import pb_method, rs_method, bo_method
 from fastmcp import FastMCP
 
 from ..models.oil_models import (
@@ -89,8 +89,8 @@ def register_oil_tools(mcp: FastMCP) -> None:
         # VALMC and VELAR methods require sg_sp (separator gas), STAN requires sg_g
         # If sg_sp is not provided but method needs it, use sg_g as fallback
         # This is a common assumption when separator gas gravity is not available
-        if request.method in ['VALMC', 'VELAR']:
-            sg_sp = getattr(request, 'sg_sp', None) or request.sg_g
+        if request.method in ["VALMC", "VELAR"]:
+            sg_sp = getattr(request, "sg_sp", None) or request.sg_g
             sg_g_param = 0
         else:  # STAN method
             sg_sp = 0
@@ -102,14 +102,14 @@ def register_oil_tools(mcp: FastMCP) -> None:
                 f"Invalid input parameters: api ({request.api}), degf ({request.degf}), "
                 f"and rsb ({request.rsb}) must all be greater than 0"
             )
-        
-        if request.method in ['VALMC', 'VELAR'] and sg_sp <= 0:
+
+        if request.method in ["VALMC", "VELAR"] and sg_sp <= 0:
             raise ValueError(
                 f"Invalid input: {request.method} method requires sg_sp (separator gas gravity) > 0. "
                 f"Provided: sg_g={request.sg_g}. Please provide a valid gas specific gravity."
             )
-        
-        if request.method == 'STAN' and sg_g_param <= 0:
+
+        if request.method == "STAN" and sg_g_param <= 0:
             raise ValueError(
                 f"Invalid input: STAN method requires sg_g (weighted average gas gravity) > 0. "
                 f"Provided: sg_g={request.sg_g}"
@@ -212,18 +212,30 @@ def register_oil_tools(mcp: FastMCP) -> None:
 
         if isinstance(request.p, list):
             value = [
-                float(oil.oil_rs(
-                    api=request.api, degf=request.degf, p=p_val,
-                    sg_sp=request.sg_g, pb=request.pb, rsb=request.rsb,
-                    rsmethod=method_enum, metric=request.metric,
-                ))
+                float(
+                    oil.oil_rs(
+                        api=request.api,
+                        degf=request.degf,
+                        p=p_val,
+                        sg_sp=request.sg_g,
+                        pb=request.pb,
+                        rsb=request.rsb,
+                        rsmethod=method_enum,
+                        metric=request.metric,
+                    )
+                )
                 for p_val in request.p
             ]
         else:
             rs = oil.oil_rs(
-                api=request.api, degf=request.degf, p=request.p,
-                sg_sp=request.sg_g, pb=request.pb, rsb=request.rsb,
-                rsmethod=method_enum, metric=request.metric,
+                api=request.api,
+                degf=request.degf,
+                p=request.p,
+                sg_sp=request.sg_g,
+                pb=request.pb,
+                rsb=request.rsb,
+                rsmethod=method_enum,
+                metric=request.metric,
             )
             value = float(rs)
 
@@ -302,7 +314,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
         calculate it, but providing it explicitly improves accuracy.
         """
         method_enum = getattr(bo_method, request.method)
-        
+
         # Calculate sg_o from API
         sg_o = oil.oil_sg(api_value=request.api)
 
@@ -395,8 +407,6 @@ def register_oil_tools(mcp: FastMCP) -> None:
         **Note:** Viscosity is highly sensitive to temperature and dissolved gas content.
         Always use reservoir temperature, not separator temperature.
         """
-        method_enum = getattr(uo_method, request.method)
-
         uo = oil.oil_viso(
             p=request.p,
             api=request.api,
@@ -487,7 +497,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
         """
         # Calculate sg_o from API
         sg_o = oil.oil_sg(api_value=request.api)
-        
+
         # Calculate density - note: oil_deno doesn't calculate from bo,
         # it calculates density directly. We use bo to back-calculate rs if needed.
         # For simple density, we can use the formula: density = (sg_o * 62.372 + 0.01357 * rs * sg_g) / bo
@@ -890,7 +900,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             pbmethod=request.method,
             metric=request.metric,
         )
-        
+
         # rsb is the solution GOR at bubble point
         rsb = request.rsb
 
@@ -956,7 +966,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
 
         Stock tank gas properties are needed for:
         - Sales gas quality specifications
-        - Flare gas calculations  
+        - Flare gas calculations
         - VOC emissions estimation
         - Safety assessments
 
@@ -1074,14 +1084,24 @@ def register_oil_tools(mcp: FastMCP) -> None:
 
         # result is tuple: (sg, tb, tc, pc, vc)
         return {
-            "specific_gravity": float(result[0]) if not isinstance(result[0], np.ndarray) else result[0].tolist(),
-            "boiling_point_degR": float(result[1]) if not isinstance(result[1], np.ndarray) else result[1].tolist(),
-            "critical_temperature_degR": float(result[2]) if not isinstance(result[2], np.ndarray) else result[2].tolist(),
-            "critical_pressure_psia": float(result[3]) if not isinstance(result[3], np.ndarray) else result[3].tolist(),
-            "critical_volume_cuft_lbmol": float(result[4]) if not isinstance(result[4], np.ndarray) else result[4].tolist(),
+            "specific_gravity": (
+                float(result[0]) if not isinstance(result[0], np.ndarray) else result[0].tolist()
+            ),
+            "boiling_point_degR": (
+                float(result[1]) if not isinstance(result[1], np.ndarray) else result[1].tolist()
+            ),
+            "critical_temperature_degR": (
+                float(result[2]) if not isinstance(result[2], np.ndarray) else result[2].tolist()
+            ),
+            "critical_pressure_psia": (
+                float(result[3]) if not isinstance(result[3], np.ndarray) else result[3].tolist()
+            ),
+            "critical_volume_cuft_lbmol": (
+                float(result[4]) if not isinstance(result[4], np.ndarray) else result[4].tolist()
+            ),
             "method": "Twu (1984) correlation",
             "inputs": request.model_dump(),
-            "note": "Use for plus fraction characterization and EOS modeling"
+            "note": "Use for plus fraction characterization and EOS modeling",
         }
 
     @mcp.tool()
@@ -1109,16 +1129,17 @@ def register_oil_tools(mcp: FastMCP) -> None:
             Dictionary with weighted average SG and breakdown
         """
         sg_avg = oil.sgg_wt_avg(
-            sg_sp=request.sg_sp,
-            rsp=request.rsp,
-            sg_st=request.sg_st,
-            rst=request.rst
+            sg_sp=request.sg_sp, rsp=request.rsp, sg_st=request.sg_st, rst=request.rst
         )
 
         return {
             "weighted_average_sg": float(sg_avg),
-            "separator_contribution": float(request.sg_sp * request.rsp / (request.rsp + request.rst)),
-            "stock_tank_contribution": float(request.sg_st * request.rst / (request.rsp + request.rst)),
+            "separator_contribution": float(
+                request.sg_sp * request.rsp / (request.rsp + request.rst)
+            ),
+            "stock_tank_contribution": float(
+                request.sg_st * request.rst / (request.rsp + request.rst)
+            ),
             "total_gor_scf_stb": float(request.rsp + request.rst),
             "method": "Weighted average by GOR",
             "units": "dimensionless (air=1)",
@@ -1150,18 +1171,14 @@ def register_oil_tools(mcp: FastMCP) -> None:
         Returns:
             Dictionary with incremental GOR and guidance
         """
-        rst = oil.oil_rs_st(
-            psp=request.psp,
-            degf_sp=request.degf_sp,
-            api=request.api
-        )
+        rst = oil.oil_rs_st(psp=request.psp, degf_sp=request.degf_sp, api=request.api)
 
         return {
             "stock_tank_gor_scf_stb": float(rst),
             "method": "Empirical correlation",
             "units": "scf/stb",
             "inputs": request.model_dump(),
-            "note": "Add to separator GOR for total solution GOR at reservoir conditions"
+            "note": "Add to separator GOR for total solution GOR at reservoir conditions",
         }
 
     @mcp.tool()
@@ -1194,7 +1211,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             sg_sp=request.sg_sp if request.sg_sp is not None else 0,
             rst=request.rst,
             rsp=request.rsp,
-            sg_st=request.sg_st
+            sg_st=request.sg_st,
         )
 
         return {
@@ -1203,7 +1220,7 @@ def register_oil_tools(mcp: FastMCP) -> None:
             "method": "Weighted average calculation",
             "units": "dimensionless (air=1)",
             "inputs": request.model_dump(),
-            "note": "sg_g and sg_sp are now consistent and validated"
+            "note": "sg_g and sg_sp are now consistent and validated",
         }
 
     @mcp.tool()
@@ -1233,10 +1250,16 @@ def register_oil_tools(mcp: FastMCP) -> None:
         **Returns:** Harmonized Pb, Rsb, rsb_fraction, and viscosity_fraction.
         """
         pb_out, rsb_out, rsb_frac, vis_frac = oil.oil_harmonize(
-            pb=request.pb, rsb=request.rsb, degf=request.degf,
-            api=request.api, sg_sp=request.sg_sp, sg_g=request.sg_g,
-            uo_target=request.uo_target, p_uo=request.p_uo,
-            rsmethod=request.rs_method, pbmethod=request.pb_method,
+            pb=request.pb,
+            rsb=request.rsb,
+            degf=request.degf,
+            api=request.api,
+            sg_sp=request.sg_sp,
+            sg_g=request.sg_g,
+            uo_target=request.uo_target,
+            p_uo=request.p_uo,
+            rsmethod=request.rs_method,
+            pbmethod=request.pb_method,
             metric=request.metric,
         )
         p_unit = "barsa" if request.metric else "psia"
@@ -1272,21 +1295,30 @@ def register_oil_tools(mcp: FastMCP) -> None:
         **Returns:** Rs, Bo, density, and viscosity at each pressure point.
         """
         opvt = oil.OilPVT(
-            api=request.api, sg_sp=request.sg_sp, pb=request.pb,
-            degf=request.temperature, rsb=request.rsb, sg_g=request.sg_g,
-            uo_target=request.uo_target, p_uo=request.p_uo,
-            rsmethod=request.rs_method, pbmethod=request.pb_method,
-            bomethod=request.bo_method, metric=request.metric,
+            api=request.api,
+            sg_sp=request.sg_sp,
+            pb=request.pb,
+            degf=request.temperature,
+            rsb=request.rsb,
+            sg_g=request.sg_g,
+            uo_target=request.uo_target,
+            p_uo=request.p_uo,
+            rsmethod=request.rs_method,
+            pbmethod=request.pb_method,
+            bomethod=request.bo_method,
+            metric=request.metric,
         )
         results = []
         for p in request.pressures:
-            results.append({
-                "pressure": p,
-                "rs": float(opvt.rs(p, request.temperature)),
-                "bo": float(opvt.bo(p, request.temperature)),
-                "density": float(opvt.density(p, request.temperature)),
-                "viscosity": float(opvt.viscosity(p, request.temperature)),
-            })
+            results.append(
+                {
+                    "pressure": p,
+                    "rs": float(opvt.rs(p, request.temperature)),
+                    "bo": float(opvt.bo(p, request.temperature)),
+                    "density": float(opvt.density(p, request.temperature)),
+                    "viscosity": float(opvt.viscosity(p, request.temperature)),
+                }
+            )
         p_unit = "barsa" if request.metric else "psia"
         return {
             "oil_pvt_properties": results,

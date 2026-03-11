@@ -48,9 +48,14 @@ def register_recommend_tools(mcp: FastMCP) -> None:
         ```
         """
         recs = recommend.recommend_methods(
-            sg=request.gas_sg, co2=request.co2, h2s=request.h2s,
-            n2=request.n2, h2=request.h2, api=request.api,
-            deviation=request.deviation, well_type=request.well_type,
+            sg=request.gas_sg,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
+            api=request.api,
+            deviation=request.deviation,
+            well_type=request.well_type,
         )
         return {key: _format_recommendation(rec) for key, rec in recs.items()}
 
@@ -68,8 +73,11 @@ def register_recommend_tools(mcp: FastMCP) -> None:
         **Returns:** Recommendations for 'zmethod' and 'cmethod'.
         """
         recs = recommend.recommend_gas_methods(
-            sg=request.gas_sg, co2=request.co2, h2s=request.h2s,
-            n2=request.n2, h2=request.h2,
+            sg=request.gas_sg,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
         )
         return {key: _format_recommendation(rec) for key, rec in recs.items()}
 
@@ -102,6 +110,7 @@ def register_recommend_tools(mcp: FastMCP) -> None:
         **Returns:** Recommendation for 'vlp_method'.
         """
         recs = recommend.recommend_vlp_method(
-            deviation=request.deviation, well_type=request.well_type,
+            deviation=request.deviation,
+            well_type=request.well_type,
         )
         return {key: _format_recommendation(rec) for key, rec in recs.items()}

@@ -23,21 +23,29 @@ def _build_completion(comp_model: CompletionModel):
     if comp_model.segments:
         segs = [
             nodal.WellSegment(
-                md=s.md, id=s.id, deviation=s.deviation,
-                roughness=s.roughness, metric=comp_model.metric,
+                md=s.md,
+                id=s.id,
+                deviation=s.deviation,
+                roughness=s.roughness,
+                metric=comp_model.metric,
             )
             for s in comp_model.segments
         ]
         return nodal.Completion(
-            segments=segs, tht=comp_model.wellhead_temp, bht=comp_model.bht,
+            segments=segs,
+            tht=comp_model.wellhead_temp,
+            bht=comp_model.bht,
             metric=comp_model.metric,
         )
     else:
         return nodal.Completion(
-            tid=comp_model.tubing_id, length=comp_model.tubing_length,
-            tht=comp_model.wellhead_temp, bht=comp_model.bht,
+            tid=comp_model.tubing_id,
+            length=comp_model.tubing_length,
+            tht=comp_model.wellhead_temp,
+            bht=comp_model.bht,
             rough=comp_model.roughness,
-            cid=comp_model.casing_id, crough=comp_model.casing_roughness,
+            cid=comp_model.casing_id,
+            crough=comp_model.casing_roughness,
             metric=comp_model.metric,
         )
 
@@ -45,8 +53,14 @@ def _build_completion(comp_model: CompletionModel):
 def _build_reservoir(res_model: ReservoirModel):
     """Build a nodal.Reservoir object from the Pydantic model."""
     return nodal.Reservoir(
-        pr=res_model.pr, degf=res_model.degf, k=res_model.k, h=res_model.h,
-        re=res_model.re, rw=res_model.rw, S=res_model.S, D=res_model.D,
+        pr=res_model.pr,
+        degf=res_model.degf,
+        k=res_model.k,
+        h=res_model.h,
+        re=res_model.re,
+        rw=res_model.rw,
+        S=res_model.S,
+        D=res_model.D,
         metric=res_model.metric,
     )
 
@@ -95,14 +109,22 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         """
         comp = _build_completion(request.completion)
         bhp = nodal.fbhp(
-            thp=request.thp, completion=comp, vlpmethod=request.vlp_method,
+            thp=request.thp,
+            completion=comp,
+            vlpmethod=request.vlp_method,
             well_type=request.well_type,
-            qg_mmscfd=request.gas_rate_mmscfd, cgr=request.cgr,
-            qw_bwpd=request.water_rate_bwpd, oil_vis=request.oil_viscosity,
-            api=request.api, pr=request.reservoir_pressure,
-            qt_stbpd=request.total_liquid_stbpd, gor=request.gor,
-            wc=request.water_cut, wsg=request.water_sg,
-            injection=request.injection, gsg=request.gas_sg,
+            qg_mmscfd=request.gas_rate_mmscfd,
+            cgr=request.cgr,
+            qw_bwpd=request.water_rate_bwpd,
+            oil_vis=request.oil_viscosity,
+            api=request.api,
+            pr=request.reservoir_pressure,
+            qt_stbpd=request.total_liquid_stbpd,
+            gor=request.gor,
+            wc=request.water_cut,
+            wsg=request.water_sg,
+            injection=request.injection,
+            gsg=request.gas_sg,
             metric=request.metric,
         )
         unit = "barsa" if request.metric else "psia"
@@ -138,19 +160,28 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         """
         res = _build_reservoir(request.reservoir)
         result = nodal.ipr_curve(
-            reservoir=res, well_type=request.well_type,
-            n_points=request.n_points, min_pwf=request.min_pwf,
-            wc=request.water_cut, wsg=request.water_sg,
-            bo=request.bo, uo=request.uo, gsg=request.gas_sg,
+            reservoir=res,
+            well_type=request.well_type,
+            n_points=request.n_points,
+            min_pwf=request.min_pwf,
+            wc=request.water_cut,
+            wsg=request.water_sg,
+            bo=request.bo,
+            uo=request.uo,
+            gsg=request.gas_sg,
             metric=request.metric,
         )
         return {
-            "pwf": [float(x) for x in result['pwf']],
-            "rate": [float(x) for x in result['rate']],
+            "pwf": [float(x) for x in result["pwf"]],
+            "rate": [float(x) for x in result["rate"]],
             "well_type": request.well_type,
             "units": {
                 "pressure": "barsa" if request.metric else "psia",
-                "rate": "sm3/d" if request.metric else ("MMscf/d" if request.well_type == "gas" else "STB/d"),
+                "rate": (
+                    "sm3/d"
+                    if request.metric
+                    else ("MMscf/d" if request.well_type == "gas" else "STB/d")
+                ),
             },
         }
 
@@ -175,18 +206,27 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         """
         comp = _build_completion(request.completion)
         result = nodal.outflow_curve(
-            thp=request.thp, completion=comp, vlpmethod=request.vlp_method,
-            well_type=request.well_type, rates=request.rates,
-            n_rates=request.n_rates, max_rate=request.max_rate,
-            cgr=request.cgr, qw_bwpd=request.water_rate_bwpd,
-            oil_vis=request.oil_viscosity, api=request.api,
-            gor=request.gor, wc=request.water_cut, wsg=request.water_sg,
-            injection=request.injection, gsg=request.gas_sg,
+            thp=request.thp,
+            completion=comp,
+            vlpmethod=request.vlp_method,
+            well_type=request.well_type,
+            rates=request.rates,
+            n_rates=request.n_rates,
+            max_rate=request.max_rate,
+            cgr=request.cgr,
+            qw_bwpd=request.water_rate_bwpd,
+            oil_vis=request.oil_viscosity,
+            api=request.api,
+            gor=request.gor,
+            wc=request.water_cut,
+            wsg=request.water_sg,
+            injection=request.injection,
+            gsg=request.gas_sg,
             metric=request.metric,
         )
         return {
-            "rates": [float(x) for x in result['rates']],
-            "bhp": [float(x) for x in result['bhp']],
+            "rates": [float(x) for x in result["rates"]],
+            "bhp": [float(x) for x in result["bhp"]],
             "well_type": request.well_type,
         }
 
@@ -223,31 +263,43 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         comp = _build_completion(request.completion)
         res = _build_reservoir(request.reservoir)
         result = nodal.operating_point(
-            thp=request.thp, completion=comp, reservoir=res,
-            vlpmethod=request.vlp_method, well_type=request.well_type,
-            cgr=request.cgr, qw_bwpd=request.water_rate_bwpd,
-            oil_vis=request.oil_viscosity, api=request.api,
-            gor=request.gor, wc=request.water_cut, wsg=request.water_sg,
-            gsg=request.gas_sg, bo=request.bo, uo=request.uo,
-            n_points=request.n_points, metric=request.metric,
+            thp=request.thp,
+            completion=comp,
+            reservoir=res,
+            vlpmethod=request.vlp_method,
+            well_type=request.well_type,
+            cgr=request.cgr,
+            qw_bwpd=request.water_rate_bwpd,
+            oil_vis=request.oil_viscosity,
+            api=request.api,
+            gor=request.gor,
+            wc=request.water_cut,
+            wsg=request.water_sg,
+            gsg=request.gas_sg,
+            bo=request.bo,
+            uo=request.uo,
+            n_points=request.n_points,
+            metric=request.metric,
         )
-        rate_unit = "sm3/d" if request.metric else ("MMscf/d" if request.well_type == "gas" else "STB/d")
+        rate_unit = (
+            "sm3/d" if request.metric else ("MMscf/d" if request.well_type == "gas" else "STB/d")
+        )
         p_unit = "barsa" if request.metric else "psia"
         response = {
-            "operating_rate": float(result['rate']),
-            "operating_bhp": float(result['bhp']),
+            "operating_rate": float(result["rate"]),
+            "operating_bhp": float(result["bhp"]),
             "rate_units": rate_unit,
             "pressure_units": p_unit,
         }
-        if 'vlp' in result:
+        if "vlp" in result:
             response["vlp_curve"] = {
-                "rates": [float(x) for x in result['vlp']['rates']],
-                "bhp": [float(x) for x in result['vlp']['bhp']],
+                "rates": [float(x) for x in result["vlp"]["rates"]],
+                "bhp": [float(x) for x in result["vlp"]["bhp"]],
             }
-        if 'ipr' in result:
+        if "ipr" in result:
             response["ipr_curve"] = {
-                "pwf": [float(x) for x in result['ipr']['pwf']],
-                "rate": [float(x) for x in result['ipr']['rate']],
+                "pwf": [float(x) for x in result["ipr"]["pwf"]],
+                "rate": [float(x) for x in result["ipr"]["rate"]],
             }
         return response
 
@@ -278,18 +330,26 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         """
         comp = _build_completion(request.completion)
         result = simtools.make_vfpprod(
-            table_num=request.table_num, completion=comp,
-            well_type=request.well_type, vlpmethod=request.vlp_method,
-            flo_rates=request.flo_rates, thp_values=request.thp_values,
-            wfr_values=request.wfr_values, gfr_values=request.gfr_values,
-            alq_values=request.alq_values, gsg=request.gas_sg,
-            oil_vis=request.oil_viscosity, api=request.api,
-            pr=request.reservoir_pressure, wsg=request.water_sg,
-            datum_depth=request.datum_depth, metric=request.metric,
+            table_num=request.table_num,
+            completion=comp,
+            well_type=request.well_type,
+            vlpmethod=request.vlp_method,
+            flo_rates=request.flo_rates,
+            thp_values=request.thp_values,
+            wfr_values=request.wfr_values,
+            gfr_values=request.gfr_values,
+            alq_values=request.alq_values,
+            gsg=request.gas_sg,
+            oil_vis=request.oil_viscosity,
+            api=request.api,
+            pr=request.reservoir_pressure,
+            wsg=request.water_sg,
+            datum_depth=request.datum_depth,
+            metric=request.metric,
         )
         response = {}
         for key, val in result.items():
-            if hasattr(val, 'tolist'):
+            if hasattr(val, "tolist"):
                 response[key] = val.tolist()
             elif isinstance(val, (np.floating, np.integer)):
                 response[key] = float(val)
@@ -321,16 +381,21 @@ def register_nodal_tools(mcp: FastMCP) -> None:
         """
         comp = _build_completion(request.completion)
         result = simtools.make_vfpinj(
-            table_num=request.table_num, completion=comp,
-            flo_type=request.flo_type, vlpmethod=request.vlp_method,
-            flo_rates=request.flo_rates, thp_values=request.thp_values,
-            gsg=request.gas_sg, wsg=request.water_sg,
-            api=request.api, datum_depth=request.datum_depth,
+            table_num=request.table_num,
+            completion=comp,
+            flo_type=request.flo_type,
+            vlpmethod=request.vlp_method,
+            flo_rates=request.flo_rates,
+            thp_values=request.thp_values,
+            gsg=request.gas_sg,
+            wsg=request.water_sg,
+            api=request.api,
+            datum_depth=request.datum_depth,
             metric=request.metric,
         )
         response = {}
         for key, val in result.items():
-            if hasattr(val, 'tolist'):
+            if hasattr(val, "tolist"):
                 response[key] = val.tolist()
             elif isinstance(val, (np.floating, np.integer)):
                 response[key] = float(val)

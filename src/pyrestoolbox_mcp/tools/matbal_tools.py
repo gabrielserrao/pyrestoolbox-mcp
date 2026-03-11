@@ -1,6 +1,5 @@
 """Material Balance tools for FastMCP."""
 
-import numpy as np
 import pyrestoolbox.matbal as matbal
 from fastmcp import FastMCP
 
@@ -45,15 +44,27 @@ def register_matbal_tools(mcp: FastMCP) -> None:
         ```
         """
         result = matbal.gas_matbal(
-            p=request.pressures, Gp=request.cumulative_gas, degf=request.temperature,
-            sg=request.gas_sg, co2=request.co2, h2s=request.h2s, n2=request.n2, h2=request.h2,
-            Wp=request.cumulative_water, Bw=request.water_fvf, We=request.water_influx,
-            zmethod=request.z_method, cmethod=request.c_method, metric=request.metric,
+            p=request.pressures,
+            Gp=request.cumulative_gas,
+            degf=request.temperature,
+            sg=request.gas_sg,
+            co2=request.co2,
+            h2s=request.h2s,
+            n2=request.n2,
+            h2=request.h2,
+            Wp=request.cumulative_water,
+            Bw=request.water_fvf,
+            We=request.water_influx,
+            zmethod=request.z_method,
+            cmethod=request.c_method,
+            metric=request.metric,
         )
         response = {
             "ogip": float(result.ogip),
-            "pz_values": result.pz.tolist() if hasattr(result.pz, 'tolist') else list(result.pz),
-            "cumulative_gas": result.gp.tolist() if hasattr(result.gp, 'tolist') else list(result.gp),
+            "pz_values": result.pz.tolist() if hasattr(result.pz, "tolist") else list(result.pz),
+            "cumulative_gas": (
+                result.gp.tolist() if hasattr(result.gp, "tolist") else list(result.gp)
+            ),
             "slope": float(result.slope),
             "intercept": float(result.intercept),
             "method": result.method,
@@ -101,22 +112,34 @@ def register_matbal_tools(mcp: FastMCP) -> None:
         ```
         """
         result = matbal.oil_matbal(
-            p=request.pressures, Np=request.cumulative_oil, degf=request.temperature,
-            api=request.api, sg_sp=request.sg_sp, sg_g=request.sg_g,
-            pb=request.pb, rsb=request.rsb,
-            Rp=request.producing_gor, Wp=request.cumulative_water,
-            Wi=request.water_injection, Gi=request.gas_injection,
-            Bw=request.water_fvf, m=request.gas_cap_ratio,
-            cf=request.cf, sw_i=request.sw_i, cw=request.cw,
-            rsmethod=request.rs_method, bomethod=request.bo_method,
-            zmethod=request.z_method, cmethod=request.c_method,
+            p=request.pressures,
+            Np=request.cumulative_oil,
+            degf=request.temperature,
+            api=request.api,
+            sg_sp=request.sg_sp,
+            sg_g=request.sg_g,
+            pb=request.pb,
+            rsb=request.rsb,
+            Rp=request.producing_gor,
+            Wp=request.cumulative_water,
+            Wi=request.water_injection,
+            Gi=request.gas_injection,
+            Bw=request.water_fvf,
+            m=request.gas_cap_ratio,
+            cf=request.cf,
+            sw_i=request.sw_i,
+            cw=request.cw,
+            rsmethod=request.rs_method,
+            bomethod=request.bo_method,
+            zmethod=request.z_method,
+            cmethod=request.c_method,
             metric=request.metric,
         )
         response = {
             "ooip": float(result.ooip),
-            "F": result.F.tolist() if hasattr(result.F, 'tolist') else list(result.F),
-            "Eo": result.Eo.tolist() if hasattr(result.Eo, 'tolist') else list(result.Eo),
-            "Eg": result.Eg.tolist() if hasattr(result.Eg, 'tolist') else list(result.Eg),
-            "Efw": result.Efw.tolist() if hasattr(result.Efw, 'tolist') else list(result.Efw),
+            "F": result.F.tolist() if hasattr(result.F, "tolist") else list(result.F),
+            "Eo": result.Eo.tolist() if hasattr(result.Eo, "tolist") else list(result.Eo),
+            "Eg": result.Eg.tolist() if hasattr(result.Eg, "tolist") else list(result.Eg),
+            "Efw": result.Efw.tolist() if hasattr(result.Efw, "tolist") else list(result.Efw),
         }
         return response

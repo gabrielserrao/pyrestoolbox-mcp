@@ -1,7 +1,7 @@
 """Pydantic models for Simulation Tools calculations."""
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Literal, Union, List, Optional
+from typing import Literal, List, Optional
 
 
 class RelPermTableRequest(BaseModel):
@@ -29,9 +29,9 @@ class RelPermTableRequest(BaseModel):
 
     rows: int = Field(25, gt=0, le=100, description="Number of table rows")
     krtable: Literal["SWOF", "SGOF", "SGWFN"] = Field(
-        "SWOF", description="Table type (SWOF, SGOF, SGWFN)")
-    krfamily: Literal["COR", "LET"] = Field(
-        "LET", description="Correlation family (Corey or LET)")
+        "SWOF", description="Table type (SWOF, SGOF, SGWFN)"
+    )
+    krfamily: Literal["COR", "LET"] = Field("LET", description="Correlation family (Corey or LET)")
 
     # Max rel perms
     kromax: float = Field(1.0, ge=0, le=1, description="Max oil rel perm")
@@ -89,7 +89,8 @@ class InfluenceTableRequest(BaseModel):
     res: int = Field(10, gt=1, le=50, description="Resolution for integration")
     aqunum: int = Field(1, ge=1, le=10, description="Aquifer number for ECLIPSE")
     infl: Literal["pot", "press"] = Field(
-        "pot", description="Influence function type (pot or press)")
+        "pot", description="Influence function type (pot or press)"
+    )
     ei: bool = Field(True, description="Use exponential integral")
     piston: bool = Field(False, description="Piston-like aquifer")
     td_scale: Optional[float] = Field(None, gt=0, description="Time dimension scaling")
@@ -148,7 +149,9 @@ class ZipSimDeckRequest(BaseModel):
         }
     )
 
-    files2scrape: List[str] = Field(..., min_length=1, description="List of deck files to process (e.g., ['CASE.DATA'])")
+    files2scrape: List[str] = Field(
+        ..., min_length=1, description="List of deck files to process (e.g., ['CASE.DATA'])"
+    )
     tozip: bool = Field(False, description="Create zip archive of all referenced files")
     console_summary: bool = Field(True, description="Print summary to console")
 

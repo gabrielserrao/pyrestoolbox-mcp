@@ -4,7 +4,11 @@ import numpy as np
 import pyrestoolbox.brine as brine
 from fastmcp import FastMCP
 
-from ..models.brine_models import BrinePropertiesRequest, CO2BrineMixtureRequest, SoreideWhitsonRequest
+from ..models.brine_models import (
+    BrinePropertiesRequest,
+    CO2BrineMixtureRequest,
+    SoreideWhitsonRequest,
+)
 
 
 def register_brine_tools(mcp: FastMCP) -> None:
@@ -122,24 +126,20 @@ def register_brine_tools(mcp: FastMCP) -> None:
         # brine_props returns: (Bw, Density, viscosity, Compressibility, Rw GOR)
         # Convert numpy arrays to lists for JSON serialization
         bw, density, viscosity, compressibility, rw_gor = result
-        
+
         is_metric = request.metric
         response = {
-            "formation_volume_factor": (
-                bw.tolist() if isinstance(bw, np.ndarray) else float(bw)
-            ),
-            "density": (
-                density.tolist() if isinstance(density, np.ndarray) else float(density)
-            ),
+            "formation_volume_factor": (bw.tolist() if isinstance(bw, np.ndarray) else float(bw)),
+            "density": (density.tolist() if isinstance(density, np.ndarray) else float(density)),
             "viscosity": (
                 viscosity.tolist() if isinstance(viscosity, np.ndarray) else float(viscosity)
             ),
             "compressibility": (
-                compressibility.tolist() if isinstance(compressibility, np.ndarray) else float(compressibility)
+                compressibility.tolist()
+                if isinstance(compressibility, np.ndarray)
+                else float(compressibility)
             ),
-            "solution_gor": (
-                rw_gor.tolist() if isinstance(rw_gor, np.ndarray) else float(rw_gor)
-            ),
+            "solution_gor": (rw_gor.tolist() if isinstance(rw_gor, np.ndarray) else float(rw_gor)),
             "units": {
                 "formation_volume_factor": "rm3/sm3" if is_metric else "rb/stb",
                 "density": "kg/m3" if is_metric else "lb/cuft",
@@ -273,7 +273,7 @@ def register_brine_tools(mcp: FastMCP) -> None:
             temp=request.temp,
             ppm=request.ppm,
             metric=request.metric,
-            cw_sat=request.cw_sat
+            cw_sat=request.cw_sat,
         )
 
         # Extract all properties, handling None values
@@ -281,40 +281,74 @@ def register_brine_tools(mcp: FastMCP) -> None:
             "phase_equilibrium": {
                 "aqueous_phase_mole_fractions": {
                     "x_co2": float(mixture.x[0]) if mixture.x is not None else 0.0,
-                    "x_h2o": float(mixture.x[1]) if mixture.x is not None and len(mixture.x) > 1 else 1.0,
+                    "x_h2o": (
+                        float(mixture.x[1]) if mixture.x is not None and len(mixture.x) > 1 else 1.0
+                    ),
                 },
                 "vapor_phase_mole_fractions": {
                     "y_co2": float(mixture.y[0]) if mixture.y is not None else 0.0,
-                    "y_h2o": float(mixture.y[1]) if mixture.y is not None and len(mixture.y) > 1 else 0.0,
+                    "y_h2o": (
+                        float(mixture.y[1]) if mixture.y is not None and len(mixture.y) > 1 else 0.0
+                    ),
                 },
                 "salt_mole_fraction": float(mixture.xSalt) if mixture.xSalt is not None else 0.0,
             },
             "densities": {
                 "co2_rich_gas_gm_cm3": float(mixture.rhoGas) if mixture.rhoGas is not None else 0.0,
-                "brine_co2_saturated_gm_cm3": float(mixture.bDen[0]) if mixture.bDen is not None else 0.0,
-                "brine_pure_gm_cm3": float(mixture.bDen[1]) if mixture.bDen is not None and len(mixture.bDen) > 1 else 0.0,
-                "fresh_water_gm_cm3": float(mixture.bDen[2]) if mixture.bDen is not None and len(mixture.bDen) > 2 else 0.0,
+                "brine_co2_saturated_gm_cm3": (
+                    float(mixture.bDen[0]) if mixture.bDen is not None else 0.0
+                ),
+                "brine_pure_gm_cm3": (
+                    float(mixture.bDen[1])
+                    if mixture.bDen is not None and len(mixture.bDen) > 1
+                    else 0.0
+                ),
+                "fresh_water_gm_cm3": (
+                    float(mixture.bDen[2])
+                    if mixture.bDen is not None and len(mixture.bDen) > 2
+                    else 0.0
+                ),
             },
             "viscosities": {
-                "brine_co2_saturated_cP": float(mixture.bVis[0]) if mixture.bVis is not None else 0.0,
-                "brine_pure_cP": float(mixture.bVis[1]) if mixture.bVis is not None and len(mixture.bVis) > 1 else 0.0,
-                "fresh_water_cP": float(mixture.bVis[2]) if mixture.bVis is not None and len(mixture.bVis) > 2 else 0.0,
+                "brine_co2_saturated_cP": (
+                    float(mixture.bVis[0]) if mixture.bVis is not None else 0.0
+                ),
+                "brine_pure_cP": (
+                    float(mixture.bVis[1])
+                    if mixture.bVis is not None and len(mixture.bVis) > 1
+                    else 0.0
+                ),
+                "fresh_water_cP": (
+                    float(mixture.bVis[2])
+                    if mixture.bVis is not None and len(mixture.bVis) > 2
+                    else 0.0
+                ),
             },
-            "viscosibility_per_bar_or_psi": float(mixture.bVisblty) if mixture.bVisblty is not None else 0.0,
+            "viscosibility_per_bar_or_psi": (
+                float(mixture.bVisblty) if mixture.bVisblty is not None else 0.0
+            ),
             "formation_volume_factors": {
                 "bw_co2_saturated": float(mixture.bw[0]) if mixture.bw is not None else 1.0,
-                "bw_pure": float(mixture.bw[1]) if mixture.bw is not None and len(mixture.bw) > 1 else 1.0,
-                "bw_fresh": float(mixture.bw[2]) if mixture.bw is not None and len(mixture.bw) > 2 else 1.0,
+                "bw_pure": (
+                    float(mixture.bw[1]) if mixture.bw is not None and len(mixture.bw) > 1 else 1.0
+                ),
+                "bw_fresh": (
+                    float(mixture.bw[2]) if mixture.bw is not None and len(mixture.bw) > 2 else 1.0
+                ),
             },
             "solution_gor_co2": float(mixture.Rs) if mixture.Rs is not None else 0.0,
             "compressibility": {
-                "undersaturated_per_bar_or_psi": float(mixture.Cf_usat) if mixture.Cf_usat is not None else 0.0,
-                "saturated_per_bar_or_psi": float(mixture.Cf_sat) if mixture.Cf_sat is not None else 0.0,
+                "undersaturated_per_bar_or_psi": (
+                    float(mixture.Cf_usat) if mixture.Cf_usat is not None else 0.0
+                ),
+                "saturated_per_bar_or_psi": (
+                    float(mixture.Cf_sat) if mixture.Cf_sat is not None else 0.0
+                ),
             },
             "method": "Duan & Sun (2003) CO2-H2O-NaCl model",
             "units": "metric" if request.metric else "field",
             "inputs": request.model_dump(),
-            "note": "Critical for CO2 sequestration, EOR, and geothermal applications"
+            "note": "Critical for CO2 sequestration, EOR, and geothermal applications",
         }
 
         return result
@@ -344,10 +378,16 @@ def register_brine_tools(mcp: FastMCP) -> None:
         solution GOR by component, water content in gas phase.
         """
         sw_obj = brine.SoreideWhitson(
-            pres=request.pres, temp=request.temp, ppm=request.ppm,
-            y_CO2=request.y_CO2, y_H2S=request.y_H2S,
-            y_N2=request.y_N2, y_H2=request.y_H2,
-            sg=request.sg, metric=request.metric, cw_sat=request.cw_sat,
+            pres=request.pres,
+            temp=request.temp,
+            ppm=request.ppm,
+            y_CO2=request.y_CO2,
+            y_H2S=request.y_H2S,
+            y_N2=request.y_N2,
+            y_H2=request.y_H2,
+            sg=request.sg,
+            metric=request.metric,
+            cw_sat=request.cw_sat,
         )
 
         # Convert Rs dict values
@@ -384,13 +424,21 @@ def register_brine_tools(mcp: FastMCP) -> None:
             "water_content_in_gas": wc_dict,
             "densities": {
                 "brine_gas_saturated_gm_cm3": float(sw_obj.bDen[0]) if sw_obj.bDen else 0.0,
-                "brine_pure_gm_cm3": float(sw_obj.bDen[1]) if sw_obj.bDen and len(sw_obj.bDen) > 1 else 0.0,
-                "fresh_water_gm_cm3": float(sw_obj.bDen[2]) if sw_obj.bDen and len(sw_obj.bDen) > 2 else 0.0,
+                "brine_pure_gm_cm3": (
+                    float(sw_obj.bDen[1]) if sw_obj.bDen and len(sw_obj.bDen) > 1 else 0.0
+                ),
+                "fresh_water_gm_cm3": (
+                    float(sw_obj.bDen[2]) if sw_obj.bDen and len(sw_obj.bDen) > 2 else 0.0
+                ),
             },
             "viscosities": {
                 "brine_gas_saturated_cP": float(sw_obj.bVis[0]) if sw_obj.bVis else 0.0,
-                "brine_pure_cP": float(sw_obj.bVis[1]) if sw_obj.bVis and len(sw_obj.bVis) > 1 else 0.0,
-                "fresh_water_cP": float(sw_obj.bVis[2]) if sw_obj.bVis and len(sw_obj.bVis) > 2 else 0.0,
+                "brine_pure_cP": (
+                    float(sw_obj.bVis[1]) if sw_obj.bVis and len(sw_obj.bVis) > 1 else 0.0
+                ),
+                "fresh_water_cP": (
+                    float(sw_obj.bVis[2]) if sw_obj.bVis and len(sw_obj.bVis) > 2 else 0.0
+                ),
             },
             "formation_volume_factors": {
                 "bw_gas_saturated": float(sw_obj.bw[0]) if sw_obj.bw else 1.0,

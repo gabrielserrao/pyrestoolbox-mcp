@@ -1,16 +1,17 @@
 """Inflow Performance calculation tools for FastMCP."""
 
 import warnings
-import numpy as np
-import pyrestoolbox.oil as oil
-import pyrestoolbox.gas as gas
-from pyrestoolbox.classes import rs_method, bo_method
-from fastmcp import FastMCP
 
 # Suppress pkg_resources deprecation warning from pyrestoolbox
 warnings.filterwarnings("ignore", category=UserWarning, message=".*pkg_resources.*")
 
-from ..models.inflow_models import (
+import numpy as np  # noqa: E402
+import pyrestoolbox.oil as oil  # noqa: E402
+import pyrestoolbox.gas as gas  # noqa: E402
+from pyrestoolbox.classes import rs_method, bo_method  # noqa: E402
+from fastmcp import FastMCP  # noqa: E402
+
+from ..models.inflow_models import (  # noqa: E402
     OilRateRadialRequest,
     OilRateLinearRequest,
     GasRateRadialRequest,
@@ -112,13 +113,13 @@ def register_inflow_tools(mcp: FastMCP) -> None:
         is_scalar = psd_array.ndim == 0
         if is_scalar:
             psd_array = np.array([psd_array])
-        
+
         # Calculate oil specific gravity from API
         sg_o = oil.oil_sg(api_value=request.api)
-        
+
         # Calculate solution GOR at sandface pressure(s)
         # oil_rs uses sg_sp (separator gas SG), use sg_g as separator gas SG
-        rs_values = oil.oil_rs(
+        oil.oil_rs(
             api=request.api,
             degf=request.degf,
             p=psd_array,
@@ -127,11 +128,11 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             rsb=request.rsb,
             rsmethod=rs_method.VELAR,
         )
-        
+
         # Calculate PVT properties at sandface pressure(s)
         # Use average pressure for PVT calculation (between reservoir and sandface)
         avg_pressures = (request.pi + psd_array) / 2.0
-        
+
         # Calculate Rs at average pressures for PVT
         rs_avg = oil.oil_rs(
             api=request.api,
@@ -142,7 +143,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             rsb=request.rsb,
             rsmethod=rs_method.VELAR,
         )
-        
+
         # Calculate Bo and uo at average pressures
         bo_values = oil.oil_bo(
             p=avg_pressures,
@@ -154,7 +155,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             sg_g=request.sg_g,
             bomethod=bo_method.MCAIN,
         )
-        
+
         uo_values = oil.oil_viso(
             p=avg_pressures,
             api=request.api,
@@ -162,13 +163,17 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             pb=request.pb,
             rs=rs_avg,
         )
-        
+
         # Convert to scalars if needed
         if is_scalar:
-            bo_values = float(bo_values[0]) if isinstance(bo_values, np.ndarray) else float(bo_values)
-            uo_values = float(uo_values[0]) if isinstance(uo_values, np.ndarray) else float(uo_values)
+            bo_values = (
+                float(bo_values[0]) if isinstance(bo_values, np.ndarray) else float(bo_values)
+            )
+            uo_values = (
+                float(uo_values[0]) if isinstance(uo_values, np.ndarray) else float(uo_values)
+            )
             psd_array = psd_array[0]
-        
+
         # Call oil_rate_radial with correct parameters
         qo = oil.oil_rate_radial(
             k=request.k,
@@ -296,13 +301,13 @@ def register_inflow_tools(mcp: FastMCP) -> None:
         is_scalar = psd_array.ndim == 0
         if is_scalar:
             psd_array = np.array([psd_array])
-        
+
         # Calculate oil specific gravity from API
         sg_o = oil.oil_sg(api_value=request.api)
-        
+
         # Calculate average pressures for PVT
         avg_pressures = (request.pi + psd_array) / 2.0
-        
+
         # Calculate Rs at average pressures
         rs_avg = oil.oil_rs(
             api=request.api,
@@ -313,7 +318,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             rsb=request.rsb,
             rsmethod=rs_method.VELAR,
         )
-        
+
         # Calculate Bo and uo at average pressures
         bo_values = oil.oil_bo(
             p=avg_pressures,
@@ -325,7 +330,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             sg_g=request.sg_g,
             bomethod=bo_method.MCAIN,
         )
-        
+
         uo_values = oil.oil_viso(
             p=avg_pressures,
             api=request.api,
@@ -333,13 +338,17 @@ def register_inflow_tools(mcp: FastMCP) -> None:
             pb=request.pb,
             rs=rs_avg,
         )
-        
+
         # Convert to scalars if needed
         if is_scalar:
-            bo_values = float(bo_values[0]) if isinstance(bo_values, np.ndarray) else float(bo_values)
-            uo_values = float(uo_values[0]) if isinstance(uo_values, np.ndarray) else float(uo_values)
+            bo_values = (
+                float(bo_values[0]) if isinstance(bo_values, np.ndarray) else float(bo_values)
+            )
+            uo_values = (
+                float(uo_values[0]) if isinstance(uo_values, np.ndarray) else float(uo_values)
+            )
             psd_array = psd_array[0]
-        
+
         # Call oil_rate_linear with correct parameters
         qo = oil.oil_rate_linear(
             k=request.k,
@@ -459,7 +468,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
         is_scalar = psd_array.ndim == 0
         if is_scalar:
             psd_array = np.array([psd_array])
-        
+
         # Call gas_rate_radial with correct parameters
         qg = gas.gas_rate_radial(
             k=request.k,
@@ -592,7 +601,7 @@ def register_inflow_tools(mcp: FastMCP) -> None:
         is_scalar = psd_array.ndim == 0
         if is_scalar:
             psd_array = np.array([psd_array])
-        
+
         # Call gas_rate_linear with correct parameters
         qg = gas.gas_rate_linear(
             k=request.k,

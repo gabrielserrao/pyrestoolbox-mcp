@@ -12,7 +12,9 @@ def _resolve_function(module_name: str, func_name: str):
     """Resolve a pyrestoolbox function from module and function names."""
     module = getattr(rtb, module_name, None)
     if module is None:
-        raise ValueError(f"Unknown module: {module_name}. Valid modules: gas, oil, brine, simtools, layer, library, nodal, matbal, dca")
+        raise ValueError(
+            f"Unknown module: {module_name}. Valid modules: gas, oil, brine, simtools, layer, library, nodal, matbal, dca"
+        )
     func = getattr(module, func_name, None)
     if func is None:
         raise ValueError(f"Unknown function: {func_name} in module {module_name}")
@@ -74,8 +76,10 @@ def register_sensitivity_tools(mcp: FastMCP) -> None:
         """
         func = _resolve_function(request.function_module, request.function_name)
         result = sensitivity.sweep(
-            func=func, base_kwargs=request.base_parameters,
-            vary_param=request.vary_parameter, vary_values=request.vary_values,
+            func=func,
+            base_kwargs=request.base_parameters,
+            vary_param=request.vary_parameter,
+            vary_values=request.vary_values,
             result_key=request.result_key,
         )
         return {
@@ -114,18 +118,22 @@ def register_sensitivity_tools(mcp: FastMCP) -> None:
         func = _resolve_function(request.function_module, request.function_name)
         ranges_tuples = {k: tuple(v) for k, v in request.ranges.items()}
         result = sensitivity.tornado(
-            func=func, base_kwargs=request.base_parameters,
-            ranges=ranges_tuples, result_key=request.result_key,
+            func=func,
+            base_kwargs=request.base_parameters,
+            ranges=ranges_tuples,
+            result_key=request.result_key,
         )
         entries = []
         for entry in result.entries:
-            entries.append({
-                "parameter": entry.param,
-                "low_value": _serialize_result(entry.low_value),
-                "high_value": _serialize_result(entry.high_value),
-                "low_result": _serialize_result(entry.low_result),
-                "high_result": _serialize_result(entry.high_result),
-            })
+            entries.append(
+                {
+                    "parameter": entry.param,
+                    "low_value": _serialize_result(entry.low_value),
+                    "high_value": _serialize_result(entry.high_value),
+                    "low_result": _serialize_result(entry.low_result),
+                    "high_result": _serialize_result(entry.high_result),
+                }
+            )
         return {
             "base_result": _serialize_result(result.base_result),
             "entries": entries,

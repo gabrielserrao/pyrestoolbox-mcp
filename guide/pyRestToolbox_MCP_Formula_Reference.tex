@@ -62,7 +62,7 @@
     \large Quick Reference for Reservoir Engineering Calculations
 }
 \author{Gabriel Serrão Seabra}
-\date{\today \\ \vspace{0.5cm} Version 1.0}
+\date{\today \\ \vspace{0.5cm} Version 2.0}
 
 \begin{document}
 
@@ -96,7 +96,7 @@ This document provides a comprehensive reference guide for calculation tools ava
 %=============================================================================
 
 \subsection{About pyResToolbox MCP}
-pyResToolbox MCP is a Model Context Protocol server that provides AI agents like Claude with access to industry-standard petroleum engineering calculations. Built on the comprehensive pyResToolbox library by Mark Burgoyne, it offers 47 production-ready tools for reservoir engineering workflows.
+pyResToolbox MCP is a Model Context Protocol server that provides AI agents like Claude with access to industry-standard petroleum engineering calculations. Built on the comprehensive pyResToolbox library by Mark Burgoyne, it offers 108 production-ready tools for reservoir engineering workflows. Supports both Field Units (psia, \textdegree F, ft) and Metric Units (barsa, \textdegree C, m) via the \texttt{metric} parameter.
 
 \subsection{Unit System}
 \textbf{All calculations use Field Units (US Oilfield standard):}
@@ -1803,6 +1803,294 @@ f'(V) &= -\sum_{i=1}^{n} \frac{z_i (K_i - 1)^2}{[1 + V(K_i - 1)]^2}
 \newpage
 
 %=============================================================================
+\section{Decline Curve Analysis (DCA)}
+%=============================================================================
+
+\subsection{Arps Decline Equations}
+
+\subsubsection{Description}
+Arps (1945) empirical decline equations model production rate decline over time. Three regimes are defined by the decline exponent $b$.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Rate vs Time:}
+\begin{align}
+q(t) &= q_i (1 + b \cdot D_i \cdot t)^{-1/b} & \text{(Hyperbolic, } 0 < b < 1\text{)} \\
+q(t) &= q_i \, e^{-D_i \cdot t} & \text{(Exponential, } b = 0\text{)} \\
+q(t) &= \frac{q_i}{1 + D_i \cdot t} & \text{(Harmonic, } b = 1\text{)}
+\end{align}
+
+\textbf{Cumulative Production:}
+\begin{align}
+N_p(t) &= \frac{q_i^b}{D_i (1-b)} \left[ q_i^{1-b} - q(t)^{1-b} \right] & \text{(Hyperbolic)} \\
+N_p(t) &= \frac{q_i - q(t)}{D_i} & \text{(Exponential)} \\
+N_p(t) &= \frac{q_i}{D_i} \ln\left(\frac{q_i}{q(t)}\right) & \text{(Harmonic)}
+\end{align}
+
+\textbf{Estimated Ultimate Recovery (EUR):}
+\begin{equation}
+\text{EUR} = N_p(t_{abandon}) \quad \text{where } q(t_{abandon}) = q_{min}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$q_i$}{Initial production rate}
+\symitem{$D_i$}{Initial decline rate (1/time)}
+\symitem{$b$}{Decline exponent (0 = exponential, 0--1 = hyperbolic, 1 = harmonic)}
+\symitem{$N_p$}{Cumulative production}
+\symitem{$q_{min}$}{Economic limit rate for EUR calculation}
+\end{itemize}
+
+\subsection{Duong Decline Model}
+
+\subsubsection{Description}
+Duong (2011) model for tight/unconventional reservoirs exhibiting long-duration transient flow.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Duong Rate-Time Relation:}
+\begin{align}
+q(t) &= q_1 \cdot t(a, m) \\
+t(a, m) &= t^{-m} \exp\left[ \frac{a}{1-m} (t^{1-m} - 1) \right]
+\end{align}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$q_1$}{Rate at $t=1$ day}
+\symitem{$a$}{Intercept parameter}
+\symitem{$m$}{Slope parameter}
+\end{itemize}
+
+\subsection{Available DCA Tools}
+\begin{itemize}
+\item \texttt{fit\_decline} --- Fit Arps parameters to rate vs time data
+\item \texttt{fit\_decline\_cumulative} --- Fit from cumulative production
+\item \texttt{decline\_forecast} --- Generate rate forecast
+\item \texttt{arps\_rate} --- Calculate rate at specified time
+\item \texttt{arps\_cumulative} --- Calculate cumulative at specified time
+\item \texttt{estimated\_ultimate\_recovery} --- EUR from decline parameters
+\item \texttt{duong\_rate} --- Duong model rate calculation
+\item \texttt{fit\_ratio} --- Fit production ratio trends (WOR, GOR)
+\item \texttt{ratio\_forecast} --- Forecast production ratios
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Material Balance}
+%=============================================================================
+
+\subsection{Gas Material Balance (P/Z Method)}
+
+\subsubsection{Description}
+The P/Z plot provides a graphical and analytical method for estimating original gas in place (OGIP) by plotting $P/Z$ vs cumulative gas production $G_p$.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Gas Material Balance Equation:}
+\begin{equation}
+\frac{P}{Z} = \frac{P_i}{Z_i} \left(1 - \frac{G_p}{G}\right)
+\end{equation}
+
+\textbf{Linear Form:}
+\begin{equation}
+\frac{P}{Z} = \frac{P_i}{Z_i} - \frac{P_i}{Z_i \cdot G} \cdot G_p
+\end{equation}
+
+\textbf{OGIP from Regression:}
+\begin{equation}
+G = -\frac{\text{intercept}}{\text{slope}} = \frac{P_i / Z_i}{|m|}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$P$}{Reservoir pressure (psia | barsa)}
+\symitem{$Z$}{Gas compressibility factor at $P$ and $T$}
+\symitem{$P_i$}{Initial reservoir pressure}
+\symitem{$Z_i$}{Z-factor at initial conditions}
+\symitem{$G_p$}{Cumulative gas production}
+\symitem{$G$}{Original gas in place (OGIP)}
+\symitem{$m$}{Regression slope}
+\end{itemize}
+
+\subsection{Oil Material Balance (Havlena-Odeh)}
+
+\subsubsection{Description}
+The Havlena-Odeh formulation linearizes the general material balance equation for oil reservoirs, enabling graphical determination of OOIP.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{General Oil Material Balance:}
+\begin{equation}
+F = N [E_o + m E_g + E_{fw}] + W_e B_w
+\end{equation}
+
+\textbf{Underground Withdrawal ($F$):}
+\begin{equation}
+F = N_p [B_o + (R_p - R_s) B_g] + W_p B_w - W_i B_w - G_i B_g
+\end{equation}
+
+\textbf{Oil Expansion ($E_o$):}
+\begin{equation}
+E_o = (B_o - B_{oi}) + (R_{si} - R_s) B_g
+\end{equation}
+
+\textbf{Gas Cap Expansion ($E_g$):}
+\begin{equation}
+E_g = B_{oi} \left(\frac{B_g}{B_{gi}} - 1\right)
+\end{equation}
+
+\textbf{Rock and Water Expansion ($E_{fw}$):}
+\begin{equation}
+E_{fw} = \frac{B_{oi} (c_f + S_{wc} c_w)}{1 - S_{wc}} \Delta P
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Symbol Definitions:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{$N$}{Original oil in place (OOIP)}
+\symitem{$N_p$}{Cumulative oil production}
+\symitem{$R_p$}{Cumulative producing GOR}
+\symitem{$m$}{Gas cap ratio $= G B_{gi} / (N B_{oi})$}
+\symitem{$W_e$}{Cumulative water influx}
+\symitem{$c_f$}{Formation compressibility}
+\symitem{$c_w$}{Water compressibility}
+\symitem{$S_{wc}$}{Connate water saturation}
+\end{itemize}
+
+\subsection{Available Material Balance Tools}
+\begin{itemize}
+\item \texttt{gas\_material\_balance} --- P/Z analysis with optional Cole plot and Havlena-Odeh regression
+\item \texttt{oil\_material\_balance} --- Havlena-Odeh oil material balance for OOIP estimation
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Nodal Analysis and VLP}
+%=============================================================================
+
+\subsection{Vertical Lift Performance (VLP)}
+
+\subsubsection{Description}
+VLP correlations calculate flowing bottom hole pressure from tubing head pressure, accounting for gravity, friction, and acceleration pressure drops along the wellbore.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{General Pressure Drop Equation:}
+\begin{equation}
+\frac{dP}{dL} = \left(\frac{dP}{dL}\right)_{\text{gravity}} + \left(\frac{dP}{dL}\right)_{\text{friction}} + \left(\frac{dP}{dL}\right)_{\text{acceleration}}
+\end{equation}
+
+\textbf{Gravity Term:}
+\begin{equation}
+\left(\frac{dP}{dL}\right)_g = \frac{\rho_m \, g \, \cos\theta}{g_c}
+\end{equation}
+
+\textbf{Friction Term:}
+\begin{equation}
+\left(\frac{dP}{dL}\right)_f = \frac{f \, \rho_m \, v_m^2}{2 \, g_c \, d}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Available VLP Correlations:}
+\begin{itemize}[leftmargin=2cm]
+\symitem{HB}{Hagedorn \& Brown (1965) --- most common for oil wells}
+\symitem{WG}{Woldesemayat \& Ghajar (2007) --- modern, recommended}
+\symitem{GRAY}{Gray (1974) --- good for gas-condensate wells}
+\symitem{BB}{Beggs \& Brill (1973) --- versatile, all inclinations}
+\end{itemize}
+
+\subsection{Operating Point}
+
+\subsubsection{Description}
+The operating point is the intersection of the IPR (inflow) and VLP (outflow) curves, representing the stabilized production rate and flowing bottom hole pressure.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Operating Point Condition:}
+\begin{equation}
+P_{wf,\text{IPR}}(q) = P_{wf,\text{VLP}}(q)
+\end{equation}
+
+Solved numerically by finding the intersection of inflow and outflow curves.
+\end{tcolorbox}
+
+\subsection{VFP Tables}
+
+\subsubsection{Description}
+VFP (Vertical Flow Performance) tables are pre-computed lookup tables of flowing BHP as a function of flow rate, THP, water fraction, gas fraction, and artificial lift quantity. Used by reservoir simulators (ECLIPSE, OPM).
+
+\subsection{Available Nodal Analysis Tools}
+\begin{itemize}
+\item \texttt{flowing\_bhp} --- Flowing bottom hole pressure from THP and completion
+\item \texttt{ipr\_curve} --- Inflow performance relationship curve generation
+\item \texttt{outflow\_curve} --- VLP outflow curve generation
+\item \texttt{operating\_point} --- VLP/IPR intersection (stabilized rate and BHP)
+\item \texttt{generate\_vfp\_prod\_table} --- VFPPROD table for reservoir simulators
+\item \texttt{generate\_vfp\_inj\_table} --- VFPINJ table for injection wells
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Sensitivity Analysis}
+%=============================================================================
+
+\subsection{Parameter Sweep}
+
+\subsubsection{Description}
+Systematically varies one or more input parameters across a range of values and evaluates the effect on output quantities. Useful for understanding parameter sensitivity and optimization.
+
+\subsection{Tornado Analysis}
+
+\subsubsection{Description}
+A tornado chart shows the relative impact of each parameter on a target output by varying each parameter independently between low and high values while holding others at their base case.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Sensitivity Index:}
+\begin{equation}
+S_i = |f(x_i^{high}) - f(x_i^{low})|
+\end{equation}
+
+Parameters are ranked by $S_i$ to identify the most influential inputs.
+\end{tcolorbox}
+
+\subsection{Available Sensitivity Tools}
+\begin{itemize}
+\item \texttt{parameter\_sweep} --- Run parameter sweeps across any tool
+\item \texttt{tornado\_sensitivity} --- Generate tornado sensitivity analysis
+\end{itemize}
+
+\newpage
+
+%=============================================================================
+\section{Brine VLE (Soreide-Whitson)}
+%=============================================================================
+
+\subsection{Soreide-Whitson VLE Model}
+
+\subsubsection{Description}
+The Soreide \& Whitson (1992) model uses a modified Peng-Robinson equation of state with special mixing rules for the water--hydrocarbon system, enabling calculation of gas solubility in brine, densities, viscosities, and formation volume factors at reservoir conditions.
+
+\begin{tcolorbox}[colback=formulabox,colframe=black!75]
+\textbf{Key Outputs:}
+\begin{itemize}
+\item Solution GOR by component (CO$_2$, H$_2$S, N$_2$, H$_2$, hydrocarbon)
+\item Total solution GOR
+\item Brine and gas phase densities
+\item Brine and gas phase viscosities
+\item Formation volume factors
+\item Water content in gas phase
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Available Brine Tools}
+\begin{itemize}
+\item \texttt{calculate\_brine\_properties} --- CH$_4$ and CO$_2$ saturated brine properties
+\item \texttt{soreide\_whitson\_vle} --- Full VLE brine-gas equilibrium calculation
+\end{itemize}
+
+\newpage
+
+%=============================================================================
 \section{Quick Reference Tables}
 %=============================================================================
 
@@ -1957,34 +2245,46 @@ LET & History matching & Flexible curve shapes \\
 \toprule
 \textbf{Category} & \textbf{Description} & \textbf{Tools} \\
 \midrule
-\textbf{Oil PVT} & Oil property calculations & 17 \\
- & \small Bubble point, Rs, Bo, viscosity, density, etc. & \\
+\textbf{Oil PVT} & Oil property calculations & 19 \\
+ & \small Bubble point, Rs, Bo, viscosity, density, PVT harmonization & \\
 \midrule
-\textbf{Gas PVT} & Gas property calculations & 11 \\
- & \small Z-factor, critical props, Bg, viscosity, etc. & \\
+\textbf{Gas PVT} & Gas property calculations & 15 \\
+ & \small Z-factor, critical props, Bg, viscosity, hydrate prediction & \\
 \midrule
 \textbf{Inflow} & Well performance & 4 \\
  & \small Oil/gas rates for radial/linear flow & \\
 \midrule
-\textbf{Simulation} & Reservoir simulation support & 3 \\
- & \small Rel perm tables, aquifer functions, flash & \\
+\textbf{Simulation} & Reservoir simulation support & 11 \\
+ & \small Rel perm (Corey, LET, Jerauld), aquifer, flash, PVTW & \\
 \midrule
-\textbf{Brine} & Brine properties & 2 \\
- & \small CH$_4$ and CO$_2$ saturated brine & \\
+\textbf{Nodal / VLP} & Nodal analysis & 6 \\
+ & \small Flowing BHP, IPR/VLP curves, VFPPROD/VFPINJ & \\
 \midrule
-\textbf{Heterogeneity} & Layer analysis & 5 \\
- & \small Lorenz, beta, layer distributions & \\
+\textbf{DCA} & Decline curve analysis & 9 \\
+ & \small Arps decline, Duong, EUR, ratio analysis & \\
 \midrule
-\textbf{Library} & Component properties & 1 \\
- & \small Critical properties for 100+ components & \\
+\textbf{Material Balance} & Reserve estimation & 2 \\
+ & \small Gas P/Z and oil Havlena-Odeh & \\
 \midrule
-\textbf{Config} & Configuration resources & 4 \\
- & \small Units, methods, constants, help & \\
+\textbf{Brine} & Brine properties & 3 \\
+ & \small CH$_4$/CO$_2$ brine, Soreide-Whitson VLE & \\
 \midrule
 \textbf{Geomechanics} & Wellbore stability \& stress & 27 \\
  & \small Stress analysis, breakouts, fracturing, sanding & \\
 \midrule
-\textbf{Total} & & \textbf{70} \\
+\textbf{Heterogeneity} & Layer analysis & 5 \\
+ & \small Lorenz, beta, layer distributions & \\
+\midrule
+\textbf{Recommend} & Method selection & 4 \\
+ & \small Gas, oil, VLP method recommendations & \\
+\midrule
+\textbf{Sensitivity} & Parameter analysis & 2 \\
+ & \small Parameter sweeps, tornado charts & \\
+\midrule
+\textbf{Library} & Component properties & 1 \\
+ & \small Critical properties for 100+ components & \\
+\midrule
+\textbf{Total} & & \textbf{108} \\
 \bottomrule
 \end{tabular}
 \caption{pyResToolbox MCP Tool Categories}
@@ -1993,8 +2293,8 @@ LET & History matching & Flexible curve shapes \\
 \subsection{Key Features}
 
 \begin{itemize}
-\item \textbf{Production Ready}: All tools tested and validated
-\item \textbf{Field Units}: Consistent use of US oilfield units
+\item \textbf{Production Ready}: All 108 tools tested and validated
+\item \textbf{Dual Units}: Field (psia, \textdegree F, ft) and Metric (barsa, \textdegree C, m)
 \item \textbf{Array Support}: Calculate properties at multiple pressures simultaneously
 \item \textbf{Multiple Methods}: Choose from various industry-standard correlations
 \item \textbf{Type Safety}: Pydantic models ensure input validation
@@ -2161,11 +2461,36 @@ LET & History matching & Flexible curve shapes \\
 \item Al-Ajmi, A.M. and Zimmerman, R.W. (2005). "Relation between the Mogi and the Coulomb Failure Criteria." \textit{International Journal of Rock Mechanics and Mining Sciences}, Vol. 42, pp. 431-439.
 \end{itemize}
 
+\subsubsection{Decline Curve Analysis}
+\begin{itemize}
+\item Arps, J.J. (1945). ``Analysis of Decline Curves.'' \textit{Transactions of the AIME}, Vol. 160, pp. 228--247.
+\item Duong, A.N. (2011). ``Rate-Decline Analysis for Fracture-Dominated Shale Reservoirs.'' \textit{SPE Reservoir Evaluation \& Engineering}, Vol. 14, No. 3, pp. 377--387.
+\end{itemize}
+
+\subsubsection{Material Balance}
+\begin{itemize}
+\item Havlena, D. and Odeh, A.S. (1963). ``The Material Balance as an Equation of a Straight Line.'' \textit{Journal of Petroleum Technology}, Vol. 15, No. 8, pp. 896--900.
+\item Cole, F.W. (1969). \textit{Reservoir Engineering Manual}. Gulf Publishing.
+\end{itemize}
+
+\subsubsection{Vertical Lift Performance}
+\begin{itemize}
+\item Hagedorn, A.R. and Brown, K.E. (1965). ``Experimental Study of Pressure Gradients Occurring During Continuous Two-Phase Flow in Small-Diameter Vertical Conduits.'' \textit{Journal of Petroleum Technology}, Vol. 17, No. 4, pp. 475--484.
+\item Woldesemayat, M.A. and Ghajar, A.J. (2007). ``Comparison of Void Fraction Correlations for Different Flow Patterns in Horizontal and Upward Inclined Pipes.'' \textit{International Journal of Multiphase Flow}, Vol. 33, pp. 347--370.
+\item Beggs, D.H. and Brill, J.P. (1973). ``A Study of Two-Phase Flow in Inclined Pipes.'' \textit{Journal of Petroleum Technology}, Vol. 25, No. 5, pp. 607--617.
+\item Gray, H.E. (1974). ``Vertical Flow Correlation in Gas Wells.'' \textit{User's Manual for API 14B}, Appendix B.
+\end{itemize}
+
+\subsubsection{Brine VLE}
+\begin{itemize}
+\item Soreide, I. and Whitson, C.H. (1992). ``Peng-Robinson Predictions for Hydrocarbons, CO$_2$, N$_2$, and H$_2$S with Pure Water and NaCl Brine.'' \textit{Fluid Phase Equilibria}, Vol. 77, pp. 217--240.
+\end{itemize}
+
 \subsection{Software and Tools}
 \begin{itemize}
 \item Burgoyne, M.W. (2024). \textit{pyResToolbox: A Collection of Reservoir Engineering Utilities}. GitHub: \url{https://github.com/mwburgoyne/pyResToolbox}
 \item Anthropic (2024). \textit{Model Context Protocol}. \url{https://modelcontextprotocol.io/}
-\item Serrao, G. (2024). \textit{pyResToolbox MCP Server}. GitHub: \url{https://github.com/gabrielserrao/pyrestoolbox-mcp}
+\item Serrao, G. (2026). \textit{pyResToolbox MCP Server v2.0}. GitHub: \url{https://github.com/gabrielserrao/pyrestoolbox-mcp}
 \end{itemize}
 
 \newpage
@@ -2398,6 +2723,41 @@ $sp$ & Separator conditions \\
 \item UCS from Logs: McNally, Horsrud, Chang, Vernik correlations
 \item Critical Drawdown: Sand production prediction
 \item Failure Criteria: Mohr-Coulomb, Drucker-Prager, Mogi-Coulomb
+\end{itemize}
+
+\textbf{Decline Curve Analysis}
+\begin{itemize}
+\item Arps Rate: Exponential, hyperbolic, harmonic decline
+\item Arps Cumulative: Integrated production
+\item EUR: Estimated ultimate recovery
+\item Duong: Tight/unconventional decline
+\item Ratio Analysis: WOR, GOR, WGR trends
+\end{itemize}
+
+\textbf{Material Balance}
+\begin{itemize}
+\item Gas P/Z: Linear regression for OGIP
+\item Oil Havlena-Odeh: Underground withdrawal vs expansion
+\end{itemize}
+
+\textbf{Nodal Analysis / VLP}
+\begin{itemize}
+\item Flowing BHP: HB, WG, GRAY, BB correlations
+\item IPR Curves: Inflow performance
+\item VLP Curves: Outflow performance
+\item Operating Point: IPR/VLP intersection
+\item VFPPROD/VFPINJ: Simulator lookup tables
+\end{itemize}
+
+\textbf{Brine VLE}
+\begin{itemize}
+\item Soreide-Whitson: VLE for brine-gas systems
+\end{itemize}
+
+\textbf{Sensitivity}
+\begin{itemize}
+\item Parameter Sweep: Multi-parameter variation
+\item Tornado Analysis: Ranked parameter impact
 \end{itemize}
 
 \textbf{Other}

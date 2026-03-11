@@ -25,6 +25,7 @@ from .tools.matbal_tools import register_matbal_tools
 from .tools.nodal_tools import register_nodal_tools
 from .tools.recommend_tools import register_recommend_tools
 from .tools.sensitivity_tools import register_sensitivity_tools
+from .tools.geomech_tools import register_geomech_tools
 
 register_oil_tools(mcp)
 register_gas_tools(mcp)
@@ -38,5 +39,6 @@ register_matbal_tools(mcp)
 register_nodal_tools(mcp)
 register_recommend_tools(mcp)
 register_sensitivity_tools(mcp)
+register_geomech_tools(mcp)
 
 __all__ = ["mcp"]

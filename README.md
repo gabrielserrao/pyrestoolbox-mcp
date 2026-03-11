@@ -8,8 +8,8 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-47%2F47%20passing-brightgreen.svg)](TEST_RESULTS.md)
-[![FastMCP](https://img.shields.io/badge/FastMCP-2.0+-purple.svg)](https://github.com/jlowin/fastmcp)
+[![Tests](https://img.shields.io/badge/tests-52%2F52%20passing-brightgreen.svg)](TEST_RESULTS.md)
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.1+-purple.svg)](https://github.com/jlowin/fastmcp)
 [![Production Ready](https://img.shields.io/badge/production-ready-brightgreen.svg)](PRODUCTION_READY.md)
 
 [![Model Context Protocol](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
@@ -20,9 +20,9 @@
 
 ---
 
-### 47 Production-Ready Tools | Field Units | Zero Configuration
+### 108 Production-Ready Tools | Field & Metric Units | Zero Configuration
 
-**PVT Analysis** • **Well Performance** • **Simulation Support** • **Brine Properties** • **Heterogeneity Analysis**
+**PVT Analysis** • **Well Performance** • **Nodal Analysis** • **DCA** • **Material Balance** • **Simulation Support** • **Brine Properties** • **Geomechanics** • **Heterogeneity Analysis**
 
 ---
 
@@ -67,9 +67,9 @@ Claude will execute the calculations using industry-standard correlations and re
 
 ### Key Features
 
-- **47 Production-Ready Tools** - All tools tested and validated
+- **108 Production-Ready Tools** - All tools tested and validated
 - **Industry-Standard Correlations** - Standing, Valko-McCain, Velarde, DAK, Beggs-Robinson, Corey, LET, and more
-- **Field Units** - Uses familiar oilfield units (psia, °F, STB/day, MSCF/day)
+- **Dual Unit Support** - Field units (psia, °F, ft) and Metric units (barsa, °C, m)
 - **Array Support** - Calculate properties at multiple pressures simultaneously
 - **Zero Configuration** - Works out of the box with Claude Desktop
 - **GPL-3.0 Licensed** - Free and open source
@@ -92,7 +92,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # 3. Setup and test
 make uv-install    # Creates venv and installs dependencies
-make uv-test       # Verifies all 47 tools work correctly
+make uv-test       # Verifies all 108 tools work correctly
 ```
 
 ### Connect to Claude Desktop
@@ -237,12 +237,42 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 - Van Everdingen & Hurst aquifer influence functions (AQUTAB)
 - Rachford-Rice flash calculations for phase behavior
 
-### Advanced Calculations
-- Brine properties (methane and CO₂ saturated)
+### Nodal Analysis & VLP
+- Flowing bottom hole pressure (Hagedorn-Brown, Woldesemayat-Ghajar, Gray, Beggs & Brill)
+- IPR curve generation (gas, oil, water wells)
+- VLP outflow curves and operating point calculation
+- VFPPROD/VFPINJ table generation for simulators
+
+### Decline Curve Analysis (DCA)
+- Arps decline (exponential, hyperbolic, harmonic)
+- Rate and cumulative production forecasting
+- EUR estimation
+- Duong tight/unconventional decline
+- Production ratio analysis (WOR, GOR, WGR)
+
+### Material Balance
+- P/Z gas material balance for OGIP estimation
+- Havlena-Odeh oil material balance for OOIP estimation
+- Cole plot diagnostics and regression
+
+### Geomechanics & Wellbore Stability (27 tools)
+- Vertical/horizontal stress, pore pressure prediction (Eaton)
+- Fracture gradient, breakdown pressure, mud weight window
+- Borehole breakout, sand production, fault stability
+- Elastic moduli, rock strength, compaction, thermal stress
+- UCS from logs, stress polygon, critical drawdown
+
+### Brine Properties
+- CH₄ and CO₂ saturated brine properties
+- Soreide-Whitson VLE for brine-gas systems
 - CO₂ sequestration studies
+
+### Advanced Calculations
 - Reservoir heterogeneity analysis (Lorenz coefficient, beta parameter)
 - Layer permeability distributions
 - Component library (critical properties for 100+ hydrocarbons)
+- Sensitivity analysis (parameter sweeps, tornado plots)
+- Method recommendation engine
 
 ### Configuration & Help
 - Query available calculation methods and correlations
@@ -450,7 +480,7 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 
 ## Unit System
 
-All calculations use **Field Units (US Oilfield)** per industry standard:
+All calculations default to **Field Units (US Oilfield)** per industry standard. Set `metric: true` on any tool to use **Metric Units** (barsa, °C, m, sm3).
 
 | Property | Unit | Example |
 |----------|------|---------|
@@ -481,21 +511,33 @@ pyrestoolbox-mcp/
 ├── src/pyrestoolbox_mcp/
 │   ├── server.py              # Main MCP server (FastMCP)
 │   ├── config.py              # Server configuration & constants
-│   ├── tools/                 # 47 MCP tool implementations (~13,800 LOC)
-│   │   ├── oil_tools.py       # 17 oil PVT tools
-│   │   ├── gas_tools.py       # 11 gas PVT tools
+│   ├── tools/                 # 108 MCP tool implementations
+│   │   ├── oil_tools.py       # 19 oil PVT tools
+│   │   ├── gas_tools.py       # 15 gas PVT tools
 │   │   ├── inflow_tools.py    # 4 well performance tools
-│   │   ├── simtools_tools.py  # 3 simulation support tools
-│   │   ├── brine_tools.py     # 2 brine property tools
+│   │   ├── simtools_tools.py  # 11 simulation support tools
+│   │   ├── nodal_tools.py     # 6 nodal analysis / VLP tools
+│   │   ├── dca_tools.py       # 9 decline curve analysis tools
+│   │   ├── matbal_tools.py    # 2 material balance tools
+│   │   ├── brine_tools.py     # 3 brine property tools
+│   │   ├── geomech_tools.py   # 27 geomechanics tools
 │   │   ├── layer_tools.py     # 5 heterogeneity tools
+│   │   ├── recommend_tools.py # 4 method recommendation tools
+│   │   ├── sensitivity_tools.py # 2 sensitivity analysis tools
 │   │   └── library_tools.py   # 1 component library tool
 │   ├── models/                # Pydantic validation models
 │   │   ├── oil_models.py
 │   │   ├── gas_models.py
 │   │   ├── inflow_models.py
 │   │   ├── simtools_models.py
+│   │   ├── nodal_models.py
+│   │   ├── dca_models.py
+│   │   ├── matbal_models.py
 │   │   ├── brine_models.py
+│   │   ├── geomech_models.py
 │   │   ├── layer_models.py
+│   │   ├── recommend_models.py
+│   │   ├── sensitivity_models.py
 │   │   └── library_models.py
 │   └── resources/             # MCP configuration resources
 │       └── config_resources.py
@@ -519,7 +561,7 @@ pyrestoolbox-mcp/
 
 1. **FastMCP Server** - Handles MCP protocol communication (STDIO, HTTP, SSE)
 2. **Pydantic Models** - Validate all inputs with descriptive error messages
-3. **Tool Layer** - 47 functions wrapping pyrestoolbox calculations
+3. **Tool Layer** - 108 functions wrapping pyrestoolbox calculations
 4. **pyRestToolbox** - Performs actual reservoir engineering calculations
 5. **Type Conversion** - Handles numpy/pandas/mpmath serialization for JSON
 
@@ -527,12 +569,18 @@ pyrestoolbox-mcp/
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| Oil PVT | 17 | Bubble point, Rs, Bo, viscosity, density, compressibility, black oil tables |
-| Gas PVT | 11 | Z-factor, critical properties, Bg, viscosity, density, pseudopressure |
+| Oil PVT | 19 | Bubble point, Rs, Bo, viscosity, density, compressibility, black oil tables, PVT harmonization |
+| Gas PVT | 15 | Z-factor, critical properties, Bg, viscosity, density, pseudopressure, hydrate prediction |
 | Inflow | 4 | Oil/gas rates for radial/linear flow, IPR generation |
-| Simulation | 3 | Relative permeability, aquifer functions, Rachford-Rice flash |
-| Brine | 2 | CH₄ and CO₂ saturated brine properties |
+| Simulation | 11 | Relative permeability (Corey, LET, Jerauld), aquifer functions, flash, PVTW, black oil OG |
+| Nodal / VLP | 6 | Flowing BHP, IPR/VLP curves, operating point, VFPPROD/VFPINJ tables |
+| DCA | 9 | Arps decline, forecasting, EUR, Duong, ratio analysis |
+| Material Balance | 2 | Gas P/Z and oil Havlena-Odeh OOIP/OGIP estimation |
+| Brine | 3 | CH₄ and CO₂ saturated brine, Soreide-Whitson VLE |
+| Geomechanics | 27 | Stress, pore pressure, fracture gradient, wellbore stability, sand production |
 | Heterogeneity | 5 | Lorenz coefficient, beta conversion, layer distributions |
+| Recommend | 4 | Method recommendation for gas, oil, VLP correlations |
+| Sensitivity | 2 | Parameter sweeps and tornado sensitivity analysis |
 | Library | 1 | Critical properties for 100+ components |
 | Config | 4 | Units, methods, constants, help resources |
 
@@ -543,7 +591,7 @@ pyrestoolbox-mcp/
 ### Running Tests
 
 ```bash
-# Quick validation (all 47 tools)
+# Quick validation (all 108 tools)
 make uv-test
 # or
 uv run python test_tools.py
@@ -819,7 +867,7 @@ Contributions are welcome! This project follows the GPL-3.0 license of the upstr
 1. **Fork the repository**
 2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
 3. **Make your changes** (follow code style guidelines)
-4. **Test thoroughly** (`uv run python test_tools.py` - all 47 must pass)
+4. **Test thoroughly** (`uv run pytest` - all tests must pass)
 5. **Format code** (`uv run black src/ tests/`)
 6. **Commit** (`git commit -m 'Add amazing feature'`)
 7. **Push** (`git push origin feature/amazing-feature`)
@@ -831,7 +879,7 @@ Contributions are welcome! This project follows the GPL-3.0 license of the upstr
 git clone https://github.com/gabrielserrao/pyrestoolbox-mcp.git
 cd pyrestoolbox-mcp
 make uv-install
-uv run python test_tools.py  # Verify all 47 tools pass
+uv run python test_tools.py  # Verify all 108 tools pass
 ```
 
 ### Guidelines
@@ -867,22 +915,27 @@ See [LICENSE](LICENSE) for complete license text.
 
 | Aspect | Status | Details |
 |--------|--------|---------|
-| **Tests** | ![Tests](https://img.shields.io/badge/tests-47%2F47%20passing-brightgreen.svg) | 100% tool coverage |
+| **Tests** | ![Tests](https://img.shields.io/badge/tests-52%2F52%20passing-brightgreen.svg) | 100% tool coverage |
 | **Production** | ✅ Ready | All tools validated |
 | **Documentation** | ✅ Complete | README, examples, guides |
 | **License** | GPL-3.0 | Matches upstream |
 | **Python** | 3.10+ | Type hints throughout |
-| **Framework** | FastMCP 2.0+ | Modern MCP implementation |
+| **Framework** | FastMCP 3.1+ | Modern MCP implementation |
 
 See [PRODUCTION_READY.md](PRODUCTION_READY.md) for detailed verification results.
 
 ### Version History
 
+**v2.0.0** (2026-03-11) - Major upgrade to pyResToolbox 3.0.4
+- 108 production-ready tools (up from 47)
+- Dual unit support (Field + Metric)
+- New modules: DCA, Material Balance, Nodal Analysis, Geomechanics, Sensitivity, Recommend
+- FastMCP 3.x compatibility
+- 52 pytest tests passing
+
 **v1.0.0** (2024-11-15) - Initial production release
 - 47 production-ready tools
-- 100% test coverage
 - Docker deployment support
-- Comprehensive documentation
 - GPL-3.0 license compliance
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
@@ -962,8 +1015,8 @@ For this MCP server:
   author = {Serrao, Gabriel},
   title = {pyResToolbox MCP Server: AI-Powered Reservoir Engineering Calculations},
   url = {https://github.com/gabrielserrao/pyrestoolbox-mcp},
-  version = {1.0.0},
-  year = {2024},
+  version = {2.0.0},
+  year = {2026},
   note = {Built on pyResToolbox by Mark W. Burgoyne}
 }
 ```

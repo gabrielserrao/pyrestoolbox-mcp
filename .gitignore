@@ -83,3 +83,5 @@ guide/*.fls
 guide/*.synctex.gz
 guide/*.bbl
 guide/*.blg
+CLAUDE.md
+test_geomech_direct.py

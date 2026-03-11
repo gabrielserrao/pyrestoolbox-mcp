@@ -196,6 +196,43 @@ Get-Command uv | Select-Object -ExpandProperty Source
 
 **Restart Claude Desktop** completely (Quit and reopen, not just close the window) and you're ready to go!
 
+---
+
+### Add the AI Skill (Recommended)
+
+The `SKILL/` folder in this repository contains a pre-built skill that teaches your AI assistant exactly how to use all 108 tools — correct parameter names, valid method codes, validation constraints, and multi-step workflows.
+
+**What's included:**
+
+| File | Purpose |
+|------|---------|
+| `SKILL/pyrestoolbox-mcp.skill` | Ready-to-install skill bundle (zip format) |
+| `SKILL/SKILL.md` | Skill definition with YAML front-matter trigger conditions |
+| `SKILL/tools-reference.md` | Complete parameter reference for all 108 tools |
+
+**Installation (Claude Code):**
+
+Copy the skill file to your Claude skills directory:
+
+```bash
+cp SKILL/SKILL.md ~/.claude/skills/pyrestoolbox-mcp.md
+
+# Optional but recommended — full parameter reference
+mkdir -p ~/.claude/skills/references
+cp SKILL/tools-reference.md ~/.claude/skills/references/tools-reference.md
+```
+
+Once installed, the skill activates automatically when you ask about reservoir engineering calculations, PVT analysis, well performance, geomechanics, or any pyResToolbox topic.
+
+**What the skill teaches the AI:**
+- Exact parameter names (`psd` not `pwf`, `sg` not `sg_g` for gas tools, `zmethod` vs `method`)
+- All valid enum strings (`"VALMC"`, `"DAK"`, `"SWOF"`, `"COR"`, etc.)
+- Required vs optional parameters for every tool
+- Numeric validation constraints (API 0–100, gas SG 0.5–2.0, Poisson's ratio 0–0.5)
+- Common multi-step workflows (PVT analysis, well performance, simulation input, geomechanics drilling window)
+
+---
+
 ### Your First Query
 
 Open Claude Desktop and try:

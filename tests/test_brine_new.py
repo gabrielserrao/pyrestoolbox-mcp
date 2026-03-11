@@ -43,5 +43,5 @@ async def test_brine_properties_with_metric(mcp_client):
         },
     )
     result = result.data
-    assert "formation_volume_factor_rb_stb" in result
-    assert "density_lb_cuft" in result
+    assert "formation_volume_factor" in result
+    assert "density" in result

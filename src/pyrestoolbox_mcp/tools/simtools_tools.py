@@ -11,6 +11,12 @@ from ..models.simtools_models import (
     RachfordRiceRequest,
     ExtractProblemCellsRequest,
     ZipSimDeckRequest,
+    BlackOilTableRequest2,
+    PVTWTableRequest,
+    FitRelPermRequest,
+    FitRelPermBestRequest,
+    JerauldRequest,
+    IsLETPhysicalRequest,
 )
 
 
@@ -613,3 +619,200 @@ def register_simtools_tools(mcp: FastMCP) -> None:
                 "error": str(e),
                 "inputs": request.model_dump(),
             }
+
+    @mcp.tool()
+    def generate_black_oil_table_og(request: BlackOilTableRequest2) -> dict:
+        """Generate oil-gas black oil PVT tables (PVTO/PVDO + PVDG).
+
+        **SIMULATION TABLE TOOL** - Creates combined oil-gas PVT tables for reservoir
+        simulation. Generates PVTO (or PVDO) + PVDG tables simultaneously with consistent
+        PVT properties including brine water tables.
+
+        **Parameters:**
+        - **pi** (float, required): Initial pressure (psia | barsa).
+        - **api** (float, required): Oil API gravity.
+        - **degf** (float, required): Temperature (deg F | deg C).
+        - **sg_g** (float, required): Gas specific gravity.
+        - **pmax** (float, required): Maximum pressure.
+        - **pb** (float): Bubble point (0 = calculate).
+        - **rsb** (float): Solution GOR at Pb.
+        - **pmin** (float): Minimum pressure (default 25).
+        - **nrows** (int): Number of rows (default 20).
+        - **wt** (float): Brine salinity wt%.
+        - **ch4_sat** (float): Methane saturation (0-1).
+        - **export** (bool): Write PVTO/PVDG/PVDO files.
+        - **pvto** (bool): Generate PVTO format (vs PVDO).
+        - **vis_frac** (float): Viscosity scaling factor.
+        - **metric** (bool): Use metric units.
+
+        **Returns:** Oil and gas PVT table data.
+        """
+        result = simtools.make_bot_og(
+            pi=request.pi, api=request.api, degf=request.degf,
+            sg_g=request.sg_g, pmax=request.pmax, pb=request.pb,
+            rsb=request.rsb, pmin=request.pmin, nrows=request.nrows,
+            wt=request.wt, ch4_sat=request.ch4_sat,
+            export=request.export, pvto=request.pvto,
+            vis_frac=request.vis_frac, metric=request.metric,
+        )
+        # Convert DataFrames to dicts
+        response = {}
+        for key, val in result.items():
+            if hasattr(val, 'to_dict'):
+                response[key] = val.to_dict(orient='records')
+            elif isinstance(val, np.ndarray):
+                response[key] = val.tolist()
+            elif isinstance(val, (np.floating, np.integer)):
+                response[key] = float(val)
+            else:
+                response[key] = val
+        return response
+
+    @mcp.tool()
+    def generate_pvtw_table(request: PVTWTableRequest) -> dict:
+        """Generate PVTW water PVT table for reservoir simulation.
+
+        **SIMULATION TABLE TOOL** - Creates PVTW keyword data for ECLIPSE/Intersect,
+        including reference pressure, Bw, Cw, viscosity, and viscosibility.
+
+        **Parameters:**
+        - **pi** (float, required): Reference pressure (psia | barsa).
+        - **degf** (float, required): Temperature (deg F | deg C).
+        - **wt** (float): Salt wt%.
+        - **ch4_sat** (float): Methane saturation (0-1).
+        - **pmin** (float): Minimum pressure.
+        - **pmax** (float): Maximum pressure.
+        - **nrows** (int): Number of rows.
+        - **export** (bool): Write PVTW.INC file.
+        - **metric** (bool): Use metric units.
+
+        **Returns:** PVTW table data with reference properties.
+        """
+        result = simtools.make_pvtw_table(
+            pi=request.pi, degf=request.degf, wt=request.wt,
+            ch4_sat=request.ch4_sat, pmin=request.pmin,
+            pmax=request.pmax, nrows=request.nrows,
+            export=request.export, metric=request.metric,
+        )
+        response = {}
+        for key, val in result.items():
+            if hasattr(val, 'to_dict'):
+                response[key] = val.to_dict(orient='records')
+            elif isinstance(val, np.ndarray):
+                response[key] = val.tolist()
+            elif isinstance(val, (np.floating, np.integer)):
+                response[key] = float(val)
+            else:
+                response[key] = val
+        return response
+
+    @mcp.tool()
+    def fit_relative_permeability(request: FitRelPermRequest) -> dict:
+        """Fit relative permeability curve to measured data.
+
+        **SCAL ANALYSIS TOOL** - Fits Corey, LET, or Jerauld model to measured
+        relative permeability data using least-squares optimization.
+
+        **Parameters:**
+        - **sw** (list[float], required): Saturation values.
+        - **kr** (list[float], required): Measured relative permeability values.
+        - **krfamily** (str): Model family: "COR" (Corey), "LET", or "JER" (Jerauld).
+        - **krmax** (float): Maximum kr endpoint (0-1).
+        - **sw_min** (float): Minimum saturation endpoint.
+        - **sw_max** (float): Maximum saturation endpoint.
+
+        **Returns:** Fitted parameters and goodness-of-fit statistics.
+        """
+        family_enum = getattr(kr_family, request.krfamily)
+        result = simtools.fit_rel_perm(
+            sw=request.sw, kr=request.kr, krfamily=family_enum,
+            krmax=request.krmax, sw_min=request.sw_min, sw_max=request.sw_max,
+        )
+        response = {}
+        for key, val in result.items():
+            if isinstance(val, np.ndarray):
+                response[key] = val.tolist()
+            elif isinstance(val, (np.floating, np.integer)):
+                response[key] = float(val)
+            else:
+                response[key] = val
+        return response
+
+    @mcp.tool()
+    def fit_relative_permeability_best(request: FitRelPermBestRequest) -> dict:
+        """Find best-fit relative permeability model from all available families.
+
+        **SCAL ANALYSIS TOOL** - Compares Corey, LET, and Jerauld fits to measured
+        data and returns the best-fitting model based on SSE/R-squared.
+
+        **Parameters:**
+        - **sw** (list[float], required): Saturation values.
+        - **kr** (list[float], required): Measured relative permeability values.
+        - **krmax** (float): Maximum kr endpoint (0-1).
+        - **sw_min** (float): Minimum saturation endpoint.
+        - **sw_max** (float): Maximum saturation endpoint.
+
+        **Returns:** Best model parameters, comparison of all models.
+        """
+        def _serialize(obj):
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, (np.floating, np.integer)):
+                return float(obj)
+            elif isinstance(obj, dict):
+                return {k: _serialize(v) for k, v in obj.items()}
+            elif isinstance(obj, (list, tuple)):
+                return [_serialize(v) for v in obj]
+            return obj
+
+        result = simtools.fit_rel_perm_best(
+            sw=request.sw, kr=request.kr,
+            krmax=request.krmax, sw_min=request.sw_min, sw_max=request.sw_max,
+        )
+        return _serialize(result)
+
+    @mcp.tool()
+    def evaluate_jerauld(request: JerauldRequest) -> dict:
+        """Evaluate Jerauld relative permeability model.
+
+        **SCAL UTILITY** - Computes normalized relative permeability using the
+        Jerauld (2006) two-parameter model. Good for water-wet systems.
+
+        **Parameters:**
+        - **s** (list[float], required): Normalized saturation values (0-1).
+        - **a** (float, required): Jerauld 'a' parameter.
+        - **b** (float, required): Jerauld 'b' parameter.
+
+        **Returns:** Relative permeability values at each saturation.
+        """
+        s_arr = np.array(request.s)
+        kr_vals = simtools.jerauld(s=s_arr, a=request.a, b=request.b)
+        return {
+            "saturation": request.s,
+            "kr": kr_vals.tolist(),
+            "model": "Jerauld",
+            "parameters": {"a": request.a, "b": request.b},
+        }
+
+    @mcp.tool()
+    def check_let_physical(request: IsLETPhysicalRequest) -> dict:
+        """Check if LET parameters produce physically valid relative permeability.
+
+        **SCAL VALIDATION TOOL** - Verifies that LET parameters produce monotonically
+        increasing kr without inflection points or non-physical behavior.
+
+        **Parameters:**
+        - **s** (list[float], required): Normalized saturation values (0-1).
+        - **L** (float, required): LET L parameter.
+        - **E** (float, required): LET E parameter.
+        - **T** (float, required): LET T parameter.
+
+        **Returns:** Whether the LET curve is physically valid.
+        """
+        s_arr = np.array(request.s)
+        is_physical = simtools.is_let_physical(s=s_arr, L=request.L, E=request.E, T=request.T)
+        return {
+            "is_physical": bool(is_physical),
+            "parameters": {"L": request.L, "E": request.E, "T": request.T},
+            "note": "Physical means monotonically increasing without inflection points",
+        }

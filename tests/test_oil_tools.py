@@ -9,13 +9,16 @@ async def test_oil_bubble_point(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_bubble_point",
         {
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "rsb": sample_oil_params["rsb"],
-            "sg_g": sample_oil_params["sg_g"],
-            "method": "VALMC",
+            "request": {
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "rsb": sample_oil_params["rsb"],
+                "sg_g": sample_oil_params["sg_g"],
+                "method": "VALMC",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -30,15 +33,18 @@ async def test_oil_solution_gor(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_solution_gor",
         {
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "p": 3000.0,
-            "sg_g": sample_oil_params["sg_g"],
-            "pb": sample_oil_params["pb"],
-            "rsb": sample_oil_params["rsb"],
-            "method": "VELAR",
+            "request": {
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "p": 3000.0,
+                "sg_g": sample_oil_params["sg_g"],
+                "pb": sample_oil_params["pb"],
+                "rsb": sample_oil_params["rsb"],
+                "method": "VELAR",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -54,15 +60,18 @@ async def test_oil_solution_gor_array(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_solution_gor",
         {
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "p": pressures,
-            "sg_g": sample_oil_params["sg_g"],
-            "pb": sample_oil_params["pb"],
-            "rsb": sample_oil_params["rsb"],
-            "method": "VELAR",
+            "request": {
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "p": pressures,
+                "sg_g": sample_oil_params["sg_g"],
+                "pb": sample_oil_params["pb"],
+                "rsb": sample_oil_params["rsb"],
+                "method": "VELAR",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], list)
@@ -76,16 +85,19 @@ async def test_oil_formation_volume_factor(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_formation_volume_factor",
         {
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "p": 3000.0,
-            "sg_g": sample_oil_params["sg_g"],
-            "pb": sample_oil_params["pb"],
-            "rs": 750.0,
-            "rsb": sample_oil_params["rsb"],
-            "method": "MCAIN",
+            "request": {
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "p": 3000.0,
+                "sg_g": sample_oil_params["sg_g"],
+                "pb": sample_oil_params["pb"],
+                "rs": 750.0,
+                "rsb": sample_oil_params["rsb"],
+                "method": "MCAIN",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -99,15 +111,18 @@ async def test_oil_viscosity(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_viscosity",
         {
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "p": 3000.0,
-            "pb": sample_oil_params["pb"],
-            "rs": 750.0,
-            "rsb": sample_oil_params["rsb"],
-            "method": "BR",
+            "request": {
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "p": 3000.0,
+                "pb": sample_oil_params["pb"],
+                "rs": 750.0,
+                "rsb": sample_oil_params["rsb"],
+                "method": "BR",
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -121,14 +136,17 @@ async def test_oil_density(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_density",
         {
-            "p": 3000.0,
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "rs": 750.0,
-            "sg_g": sample_oil_params["sg_g"],
-            "bo": 1.3,
+            "request": {
+                "p": 3000.0,
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "rs": 750.0,
+                "sg_g": sample_oil_params["sg_g"],
+                "bo": 1.3,
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)
@@ -142,15 +160,18 @@ async def test_oil_compressibility(mcp_client, sample_oil_params):
     result = await mcp_client.call_tool(
         "oil_compressibility",
         {
-            "p": 4000.0,
-            "api": sample_oil_params["api"],
-            "degf": sample_oil_params["degf"],
-            "pb": sample_oil_params["pb"],
-            "sg_g": sample_oil_params["sg_g"],
-            "rs": sample_oil_params["rsb"],
-            "rsb": sample_oil_params["rsb"],
+            "request": {
+                "p": 4000.0,
+                "api": sample_oil_params["api"],
+                "degf": sample_oil_params["degf"],
+                "pb": sample_oil_params["pb"],
+                "sg_g": sample_oil_params["sg_g"],
+                "rs": sample_oil_params["rsb"],
+                "rsb": sample_oil_params["rsb"],
+            }
         },
     )
+    result = result.data
 
     assert "value" in result
     assert isinstance(result["value"], float)

@@ -4,7 +4,7 @@ import numpy as np
 import pyrestoolbox.brine as brine
 from fastmcp import FastMCP
 
-from ..models.brine_models import BrinePropertiesRequest, CO2BrineMixtureRequest
+from ..models.brine_models import BrinePropertiesRequest, CO2BrineMixtureRequest, SoreideWhitsonRequest
 
 
 def register_brine_tools(mcp: FastMCP) -> None:
@@ -31,16 +31,11 @@ def register_brine_tools(mcp: FastMCP) -> None:
           Typical: 0-0.1. Example: 0.03 for 3% CO2 saturation.
 
         **Properties Calculated:**
-        - **Density (ρw):** Brine density in lb/cuft. Increases with salinity, pressure.
-          Typical: 60-70 lb/cuft.
+        - **Density (ρw):** Brine density (lb/cuft field, kg/m3 metric). Increases with salinity, pressure.
         - **Viscosity (μw):** Brine viscosity in cP. Decreases with temperature, increases with salinity.
-          Typical: 0.3-1.5 cP.
-        - **Compressibility (cw):** Brine compressibility in 1/psi. Critical for aquifer influx.
-          Typical: 2e-6 to 5e-6 1/psi.
-        - **Formation Volume Factor (Bw):** Volume ratio rb/stb. Slightly > 1.0.
-          Typical: 1.01-1.05 rb/stb.
-        - **Solution GOR (Rw):** Gas dissolved in brine in scf/stb. Increases with pressure.
-          Typical: 0-20 scf/stb.
+        - **Compressibility (cw):** Brine compressibility (1/psi field, 1/bar metric). Critical for aquifer influx.
+        - **Formation Volume Factor (Bw):** Volume ratio (rb/stb field, rm3/sm3 metric). Slightly > 1.0.
+        - **Solution GOR (Rw):** Gas dissolved in brine (scf/stb field, sm3/sm3 metric). Increases with pressure.
 
         **Dissolved Gas Effects:**
         - **CH4-saturated:** Methane dissolved in formation water (typical in aquifers)
@@ -72,11 +67,13 @@ def register_brine_tools(mcp: FastMCP) -> None:
 
         **Returns:**
         Dictionary with:
-        - **formation_volume_factor_rb_stb** (float or list): Bw (matches input p shape)
-        - **density_lb_cuft** (float or list): Brine density (matches input p shape)
-        - **viscosity_cp** (float or list): Brine viscosity (matches input p shape)
-        - **compressibility_1_psi** (float or list): Brine compressibility (matches input p shape)
-        - **solution_gor_scf_stb** (float or list): Gas dissolved in brine (matches input p shape)
+        - **formation_volume_factor** (float or list): Bw (matches input p shape)
+        - **density** (float or list): Brine density (matches input p shape)
+        - **viscosity** (float or list): Brine viscosity (matches input p shape)
+        - **compressibility** (float or list): Brine compressibility (matches input p shape)
+        - **solution_gor** (float or list): Gas dissolved in brine (matches input p shape)
+        - **units** (dict): Unit labels for each property (adapts to metric flag)
+        - **unit_system** (str): "metric" or "field"
         - **method** (str): "Industry standard correlations"
         - **salinity_wt_percent** (float): Input salinity
         - **dissolved_gas_saturation** (float): Combined CH4+CO2 saturation
@@ -118,6 +115,7 @@ def register_brine_tools(mcp: FastMCP) -> None:
             degf=request.degf,
             wt=request.wt,
             ch4_sat=ch4_saturation,
+            metric=request.metric,
         )
 
         # Extract properties from result tuple
@@ -125,22 +123,33 @@ def register_brine_tools(mcp: FastMCP) -> None:
         # Convert numpy arrays to lists for JSON serialization
         bw, density, viscosity, compressibility, rw_gor = result
         
+        is_metric = request.metric
         response = {
-            "formation_volume_factor_rb_stb": (
+            "formation_volume_factor": (
                 bw.tolist() if isinstance(bw, np.ndarray) else float(bw)
             ),
-            "density_lb_cuft": (
+            "density": (
                 density.tolist() if isinstance(density, np.ndarray) else float(density)
             ),
-            "viscosity_cp": (
+            "viscosity": (
                 viscosity.tolist() if isinstance(viscosity, np.ndarray) else float(viscosity)
             ),
-            "compressibility_1_psi": (
+            "compressibility": (
                 compressibility.tolist() if isinstance(compressibility, np.ndarray) else float(compressibility)
             ),
-            "solution_gor_scf_stb": (
+            "solution_gor": (
                 rw_gor.tolist() if isinstance(rw_gor, np.ndarray) else float(rw_gor)
             ),
+            "units": {
+                "formation_volume_factor": "rm3/sm3" if is_metric else "rb/stb",
+                "density": "kg/m3" if is_metric else "lb/cuft",
+                "viscosity": "cP",
+                "compressibility": "1/bar" if is_metric else "1/psi",
+                "solution_gor": "sm3/sm3" if is_metric else "scf/stb",
+                "pressure": "barsa" if is_metric else "psia",
+                "temperature": "degC" if is_metric else "degF",
+            },
+            "unit_system": "metric" if is_metric else "field",
             "method": "Industry standard correlations",
             "salinity_wt_percent": request.wt,
             "dissolved_gas_saturation": ch4_saturation,
@@ -309,3 +318,90 @@ def register_brine_tools(mcp: FastMCP) -> None:
         }
 
         return result
+
+    @mcp.tool()
+    def soreide_whitson_vle(request: SoreideWhitsonRequest) -> dict:
+        """Calculate Soreide-Whitson VLE brine properties with hydrocarbon gas.
+
+        **ADVANCED BRINE PVT TOOL** - Computes comprehensive brine properties using
+        the Soreide-Whitson (1992) vapor-liquid equilibrium model. Accounts for
+        dissolved CH4, C2H6, C3H8, nC4H10 in brine and water content in gas phase.
+        More rigorous than simple correlations for gas-brine systems.
+
+        **Parameters:**
+        - **pres** (float, required): Pressure (psia | barsa).
+        - **temp** (float, required): Temperature (degF | degC).
+        - **ppm** (float): Brine salinity (ppm NaCl).
+        - **y_CO2** (float): CO2 mole fraction in gas.
+        - **y_H2S** (float): H2S mole fraction in gas.
+        - **y_N2** (float): N2 mole fraction in gas.
+        - **y_H2** (float): H2 mole fraction in gas.
+        - **sg** (float): Gas specific gravity (air=1).
+        - **metric** (bool): Use metric units.
+        - **cw_sat** (bool): Calculate saturated compressibility.
+
+        **Returns:** Phase equilibrium, densities, viscosities, FVF, compressibility,
+        solution GOR by component, water content in gas phase.
+        """
+        sw_obj = brine.SoreideWhitson(
+            pres=request.pres, temp=request.temp, ppm=request.ppm,
+            y_CO2=request.y_CO2, y_H2S=request.y_H2S,
+            y_N2=request.y_N2, y_H2=request.y_H2,
+            sg=request.sg, metric=request.metric, cw_sat=request.cw_sat,
+        )
+
+        # Convert Rs dict values
+        rs_dict = {}
+        if isinstance(sw_obj.Rs, dict):
+            for k, v in sw_obj.Rs.items():
+                rs_dict[k] = float(v)
+        else:
+            rs_dict["total"] = float(sw_obj.Rs) if sw_obj.Rs is not None else 0.0
+
+        # Convert x (aqueous mole fractions)
+        x_dict = {}
+        if isinstance(sw_obj.x, dict):
+            for k, v in sw_obj.x.items():
+                x_dict[k] = float(v)
+
+        # Convert y (gas compositions)
+        y_dict = {}
+        if isinstance(sw_obj.y, dict):
+            for k, v in sw_obj.y.items():
+                y_dict[k] = float(v)
+
+        # Water content
+        wc_dict = {}
+        if isinstance(sw_obj.water_content, dict):
+            for k, v in sw_obj.water_content.items():
+                wc_dict[k] = float(v)
+
+        return {
+            "solution_gor_by_component": rs_dict,
+            "solution_gor_total": float(sw_obj.Rs_total) if sw_obj.Rs_total is not None else 0.0,
+            "aqueous_mole_fractions": x_dict,
+            "gas_composition": y_dict,
+            "water_content_in_gas": wc_dict,
+            "densities": {
+                "brine_gas_saturated_gm_cm3": float(sw_obj.bDen[0]) if sw_obj.bDen else 0.0,
+                "brine_pure_gm_cm3": float(sw_obj.bDen[1]) if sw_obj.bDen and len(sw_obj.bDen) > 1 else 0.0,
+                "fresh_water_gm_cm3": float(sw_obj.bDen[2]) if sw_obj.bDen and len(sw_obj.bDen) > 2 else 0.0,
+            },
+            "viscosities": {
+                "brine_gas_saturated_cP": float(sw_obj.bVis[0]) if sw_obj.bVis else 0.0,
+                "brine_pure_cP": float(sw_obj.bVis[1]) if sw_obj.bVis and len(sw_obj.bVis) > 1 else 0.0,
+                "fresh_water_cP": float(sw_obj.bVis[2]) if sw_obj.bVis and len(sw_obj.bVis) > 2 else 0.0,
+            },
+            "formation_volume_factors": {
+                "bw_gas_saturated": float(sw_obj.bw[0]) if sw_obj.bw else 1.0,
+                "bw_pure": float(sw_obj.bw[1]) if sw_obj.bw and len(sw_obj.bw) > 1 else 1.0,
+                "bw_fresh": float(sw_obj.bw[2]) if sw_obj.bw and len(sw_obj.bw) > 2 else 1.0,
+            },
+            "compressibility": {
+                "undersaturated": float(sw_obj.Cf_usat) if sw_obj.Cf_usat is not None else 0.0,
+                "saturated": float(sw_obj.Cf_sat) if sw_obj.Cf_sat is not None else None,
+            },
+            "viscosibility": float(sw_obj.bVisblty) if sw_obj.bVisblty is not None else 0.0,
+            "method": "Soreide-Whitson (1992) VLE",
+            "units": "metric" if request.metric else "field",
+        }

@@ -23,6 +23,7 @@ def gas_grad2sg_fixed(
     tc: float = 0,
     pc: float = 0,
     rtol: float = 1e-7,
+    metric: bool = False,
 ) -> float:
     """Returns insitu gas specific gravity consistent with observed gas gradient.
     
@@ -61,6 +62,7 @@ def gas_grad2sg_fixed(
             n2=n2,
             tc=tc,
             pc=pc,
+            metric=metric,
         )
         grad_calc = p * m / (zee * R * degR) / 144
         return grad_calc

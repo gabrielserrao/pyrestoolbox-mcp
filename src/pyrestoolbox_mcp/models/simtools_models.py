@@ -151,3 +151,77 @@ class ZipSimDeckRequest(BaseModel):
     files2scrape: List[str] = Field(..., min_length=1, description="List of deck files to process (e.g., ['CASE.DATA'])")
     tozip: bool = Field(False, description="Create zip archive of all referenced files")
     console_summary: bool = Field(True, description="Print summary to console")
+
+
+class BlackOilTableRequest2(BaseModel):
+    """Request model for make_bot_og black oil table generation."""
+
+    pi: float = Field(..., gt=0, description="Initial pressure (psia | barsa)")
+    api: float = Field(..., gt=0, le=100, description="Oil API gravity")
+    degf: float = Field(..., description="Temperature (deg F | deg C)")
+    sg_g: float = Field(..., gt=0, le=3, description="Gas specific gravity")
+    pmax: float = Field(..., gt=0, description="Maximum pressure (psia | barsa)")
+    pb: float = Field(0.0, ge=0, description="Bubble point (0 = calculate)")
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at Pb")
+    pmin: float = Field(25.0, gt=0, description="Minimum pressure")
+    nrows: int = Field(20, gt=0, le=200, description="Number of rows")
+    wt: float = Field(0.0, ge=0, le=30, description="Brine salinity (wt%)")
+    ch4_sat: float = Field(0.0, ge=0, le=1, description="Methane saturation (0-1)")
+    export: bool = Field(False, description="Write PVTO/PVDG/PVDO files")
+    pvto: bool = Field(False, description="Generate PVTO format (vs PVDO)")
+    vis_frac: float = Field(1.0, gt=0, description="Viscosity scaling factor")
+    metric: bool = Field(False, description="Use metric units")
+
+
+class PVTWTableRequest(BaseModel):
+    """Request model for PVTW table generation."""
+
+    pi: float = Field(..., gt=0, description="Reference pressure (psia | barsa)")
+    degf: float = Field(..., description="Temperature (deg F | deg C)")
+    wt: float = Field(0.0, ge=0, le=30, description="Salt wt% (0-100)")
+    ch4_sat: float = Field(0.0, ge=0, le=1, description="Methane saturation (0-1)")
+    pmin: float = Field(500.0, gt=0, description="Minimum pressure")
+    pmax: float = Field(10000.0, gt=0, description="Maximum pressure")
+    nrows: int = Field(20, gt=0, le=200, description="Number of rows")
+    export: bool = Field(False, description="Write PVTW.INC file")
+    metric: bool = Field(False, description="Use metric units")
+
+
+class FitRelPermRequest(BaseModel):
+    """Request model for relative permeability curve fitting."""
+
+    sw: List[float] = Field(..., description="Saturation values")
+    kr: List[float] = Field(..., description="Measured relative permeability values")
+    krfamily: Literal["COR", "LET", "JER"] = Field(
+        "COR", description="Model: COR (Corey), LET, JER (Jerauld)"
+    )
+    krmax: float = Field(1.0, gt=0, le=1, description="Maximum kr endpoint")
+    sw_min: float = Field(0.0, ge=0, le=1, description="Minimum saturation endpoint")
+    sw_max: float = Field(1.0, ge=0, le=1, description="Maximum saturation endpoint")
+
+
+class FitRelPermBestRequest(BaseModel):
+    """Request model for best-fit relative permeability model selection."""
+
+    sw: List[float] = Field(..., description="Saturation values")
+    kr: List[float] = Field(..., description="Measured relative permeability values")
+    krmax: float = Field(1.0, gt=0, le=1, description="Maximum kr endpoint")
+    sw_min: float = Field(0.0, ge=0, le=1, description="Minimum saturation endpoint")
+    sw_max: float = Field(1.0, ge=0, le=1, description="Maximum saturation endpoint")
+
+
+class JerauldRequest(BaseModel):
+    """Request model for Jerauld relative permeability evaluation."""
+
+    s: List[float] = Field(..., min_length=2, description="Normalized saturation values (0-1)")
+    a: float = Field(..., description="Jerauld 'a' parameter")
+    b: float = Field(..., description="Jerauld 'b' parameter")
+
+
+class IsLETPhysicalRequest(BaseModel):
+    """Request model for LET physical validity check."""
+
+    s: List[float] = Field(..., min_length=2, description="Normalized saturation values (0-1)")
+    L: float = Field(..., gt=0, description="LET L parameter")
+    E: float = Field(..., gt=0, description="LET E parameter")
+    T: float = Field(..., gt=0, description="LET T parameter")

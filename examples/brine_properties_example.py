@@ -33,10 +33,11 @@ async def brine_properties_example():
             },
         )
         print(f"Pressure: {3000:.0f} psia, Temperature: {175:.0f} degF")
-        print(f"Density: {fresh_result['density_lb_cuft']:.4f} lb/cuft")
-        print(f"Viscosity: {fresh_result['viscosity_cp']:.4f} cP")
-        print(f"Compressibility: {fresh_result['compressibility_1_psi']:.2e} 1/psi")
-        print(f"Formation Volume Factor: {fresh_result['formation_volume_factor_rb_stb']:.4f} rb/stb")
+        units = fresh_result['units']
+        print(f"Density: {fresh_result['density']:.4f} {units['density']}")
+        print(f"Viscosity: {fresh_result['viscosity']:.4f} {units['viscosity']}")
+        print(f"Compressibility: {fresh_result['compressibility']:.2e} {units['compressibility']}")
+        print(f"Formation Volume Factor: {fresh_result['formation_volume_factor']:.4f} {units['formation_volume_factor']}")
 
         # Example 2: Saline brine (5% NaCl)
         print("\nExample 2: Saline Brine (5% NaCl)")
@@ -52,10 +53,11 @@ async def brine_properties_example():
             },
         )
         print(f"Pressure: {3000:.0f} psia, Temperature: {175:.0f} degF, Salinity: 5% NaCl")
-        print(f"Density: {saline_result['density_lb_cuft']:.4f} lb/cuft")
-        print(f"Viscosity: {saline_result['viscosity_cp']:.4f} cP")
-        print(f"Compressibility: {saline_result['compressibility_1_psi']:.2e} 1/psi")
-        print(f"Formation Volume Factor: {saline_result['formation_volume_factor_rb_stb']:.4f} rb/stb")
+        units = saline_result['units']
+        print(f"Density: {saline_result['density']:.4f} {units['density']}")
+        print(f"Viscosity: {saline_result['viscosity']:.4f} {units['viscosity']}")
+        print(f"Compressibility: {saline_result['compressibility']:.2e} {units['compressibility']}")
+        print(f"Formation Volume Factor: {saline_result['formation_volume_factor']:.4f} {units['formation_volume_factor']}")
 
         # Example 3: Methane-saturated brine
         print("\nExample 3: Methane-Saturated Brine")
@@ -72,10 +74,11 @@ async def brine_properties_example():
         )
         print(f"Pressure: {3000:.0f} psia, Temperature: {175:.0f} degF")
         print(f"Salinity: 3% NaCl, CH4: Saturated")
-        print(f"Density: {ch4_result['density_lb_cuft']:.4f} lb/cuft")
-        print(f"Viscosity: {ch4_result['viscosity_cp']:.4f} cP")
-        print(f"Compressibility: {ch4_result['compressibility_1_psi']:.2e} 1/psi")
-        print(f"Formation Volume Factor: {ch4_result['formation_volume_factor_rb_stb']:.4f} rb/stb")
+        units = ch4_result['units']
+        print(f"Density: {ch4_result['density']:.4f} {units['density']}")
+        print(f"Viscosity: {ch4_result['viscosity']:.4f} {units['viscosity']}")
+        print(f"Compressibility: {ch4_result['compressibility']:.2e} {units['compressibility']}")
+        print(f"Formation Volume Factor: {ch4_result['formation_volume_factor']:.4f} {units['formation_volume_factor']}")
 
         # Example 4: Pressure and temperature effects
         print("\nExample 4: Pressure and Temperature Effects")
@@ -100,7 +103,7 @@ async def brine_properties_example():
                     "co2": 0.0,
                 },
             )
-            densities = result["density_lb_cuft"]
+            densities = result["density"]
             print(f"{temp:10.0f}", end="")
             for den in densities:
                 print(f" | {den:7.4f}", end="")
@@ -125,8 +128,8 @@ async def brine_properties_example():
                 },
             )
             print(
-                f"{wt:18.1f} | {result['density_lb_cuft']:15.4f} | "
-                f"{result['viscosity_cp']:15.4f}"
+                f"{wt:18.1f} | {result['density']:15.4f} | "
+                f"{result['viscosity']:15.4f}"
             )
 
         print("\n" + "=" * 80)

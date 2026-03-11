@@ -1,7 +1,7 @@
 """Pydantic models for Brine calculations."""
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Literal, Union, List
+from typing import Literal, Union, List, Optional
 
 
 class BrinePropertiesRequest(BaseModel):
@@ -34,6 +34,7 @@ class BrinePropertiesRequest(BaseModel):
     co2: float = Field(
         0.0, ge=0, description="Dissolved CO2 mole fraction (dimensionless)"
     )
+    metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "degf")
     @classmethod
@@ -70,3 +71,30 @@ class CO2BrineMixtureRequest(BaseModel):
     cw_sat: float = Field(
         0.0, ge=0, description="Cw at saturation pressure (1/psi or 1/bar) - 0 for auto-calculate"
     )
+
+
+class SoreideWhitsonRequest(BaseModel):
+    """Request model for Soreide-Whitson VLE brine calculation."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "pres": 3000.0,
+                "temp": 180.0,
+                "ppm": 50000,
+                "sg": 0.65,
+                "metric": False,
+            }
+        }
+    )
+
+    pres: float = Field(..., gt=0, description="Pressure (psia | barsa)")
+    temp: float = Field(..., description="Temperature (degF | degC)")
+    ppm: float = Field(0.0, ge=0, description="Brine salinity (ppm NaCl)")
+    y_CO2: float = Field(0.0, ge=0, le=1, description="CO2 mole fraction in gas")
+    y_H2S: float = Field(0.0, ge=0, le=1, description="H2S mole fraction in gas")
+    y_N2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction in gas")
+    y_H2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction in gas")
+    sg: float = Field(0.65, gt=0, le=3, description="Gas specific gravity (air=1)")
+    metric: bool = Field(False, description="Use metric units")
+    cw_sat: bool = Field(False, description="Calculate saturated compressibility")

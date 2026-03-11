@@ -21,12 +21,22 @@ def _resolve_function(module_name: str, func_name: str):
 
 def _serialize_result(val):
     """Serialize a result value for JSON output."""
+    # Handle NumPy scalar types by converting to native Python float
     if isinstance(val, (np.floating, np.integer)):
         return float(val)
+    # Convert NumPy arrays to lists
     if isinstance(val, np.ndarray):
         return val.tolist()
-    if isinstance(val, (int, float)):
+    # Primitive JSON types can be returned as-is
+    if isinstance(val, (int, float, bool, str)) or val is None:
         return val
+    # Preserve structure for mappings by recursively serializing values
+    if isinstance(val, dict):
+        return {k: _serialize_result(v) for k, v in val.items()}
+    # Preserve structure for sequences by recursively serializing items
+    if isinstance(val, (list, tuple)):
+        return [_serialize_result(v) for v in val]
+    # Fallback: stringify any other unsupported type
     return str(val)
 
 

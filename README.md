@@ -220,10 +220,11 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 - Generate comprehensive black oil tables for simulators
 
 ### Gas PVT Analysis
-- Z-factor calculations (DAK, Hall-Yarborough, WYW, Burrows)
+- Z-factor calculations (DAK, Hall-Yarborough, WYW, BUR/Peng-Robinson EOS)
+- **Hydrogen-capable** gas PVT via BUR method (SPE-229932-MS) - handles arbitrary mixtures including pure CO₂ and 30%+ H₂
 - Critical properties with contaminants (CO₂, H₂S, N₂, H₂)
 - Gas viscosity, density, compressibility, pseudopressure
-- Formation volume factors
+- Formation volume factors, hydrate prediction, water content
 
 ### Well Performance & IPR
 - Oil and gas production rates (radial and linear flow)
@@ -232,16 +233,22 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 - Sensitivity analysis for permeability, skin, reservoir pressure
 
 ### Reservoir Simulation Support
-- Relative permeability tables (SWOF, SGOF, SGWFN)
-- Corey and LET correlations
+- Relative permeability tables (SWOF, SGOF, SGWFN) with **Corey**, **LET**, and **Jerauld** curve families
+- **Rel perm fitting** - fit lab data to any model family, or auto-select best fit
+- LET physical feasibility checking
+- PVDO/PVDG/PVTO black oil tables and PVTW water PVT generation
+- VFPPROD/VFPINJ lift curve tables for ECLIPSE
 - Van Everdingen & Hurst aquifer influence functions (AQUTAB)
 - Rachford-Rice flash calculations for phase behavior
 
 ### Nodal Analysis & VLP
-- Flowing bottom hole pressure (Hagedorn-Brown, Woldesemayat-Ghajar, Gray, Beggs & Brill)
+- Four multiphase VLP correlations: **Woldesemayat-Ghajar** (WG), **Hagedorn-Brown** (HB), **Gray**, **Beggs & Brill** (BB)
+- Multi-segment deviated and horizontal completions (not just vertical pipes)
 - IPR curve generation (gas, oil, water wells)
 - VLP outflow curves and operating point calculation
-- VFPPROD/VFPINJ table generation for simulators
+- Production and injection modes supported
+- VFPPROD/VFPINJ table generation for ECLIPSE/Intersect simulators
+- GasPVT and OilPVT wrapper classes for consistent fluid characterization
 
 ### Decline Curve Analysis (DCA)
 - Arps decline (exponential, hyperbolic, harmonic)
@@ -263,9 +270,11 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 - UCS from logs, stress polygon, critical drawdown
 
 ### Brine Properties
-- CH₄ and CO₂ saturated brine properties
-- Soreide-Whitson VLE for brine-gas systems
-- CO₂ sequestration studies
+- CH₄-saturated brine properties (density, viscosity, FVF, compressibility)
+- CO₂-brine mutual solubility for sequestration studies
+- **Soreide-Whitson VLE** for multi-gas brine systems (CO₂, H₂S, N₂, H₂) with Sechenov salting-out corrections
+- IAPWS-IF97 freshwater density, Spivey/McCain salinity corrections
+- Per-component solubility, water content, and thermodynamic properties from a single framework
 
 ### Advanced Calculations
 - Reservoir heterogeneity analysis (Lorenz coefficient, beta parameter)
@@ -480,7 +489,7 @@ Inputs: API=35°, T=180°F, Rs=800 scf/stb, SG_gas=0.75
 
 ## Unit System
 
-All calculations default to **Field Units (US Oilfield)** per industry standard. Set `metric: true` on any tool to use **Metric Units** (barsa, °C, m, sm3).
+All calculations default to **Field Units (US Oilfield)** per industry standard. Set `metric: true` on any tool to use **Metric Units** (Eclipse METRIC conventions: barsa, °C, metres, sm³/d) with no manual conversion needed. ECLIPSE keyword output automatically switches to METRIC headers.
 
 | Property | Unit | Example |
 |----------|------|---------|
@@ -595,6 +604,43 @@ pyrestoolbox-mcp/
 
 ---
 
+## pyResToolbox v3 Feature Coverage
+
+This MCP server wraps **pyResToolbox v3.0.4**. The following table shows coverage of the major v3 features announced in the [v3 release post](https://github.com/mwburgoyne/pyResToolbox):
+
+| v3 Feature | MCP Coverage | Details |
+|------------|-------------|---------|
+| **Nodal Analysis** - 4 VLP correlations (WG, HB, BB, Gray) | **Full** | `flowing_bhp`, `ipr_curve`, `outflow_curve`, `operating_point` tools with `vlp_method` parameter |
+| **Multi-segment deviated/horizontal completions** | **Full** | `WellSegment` and `Completion` classes exposed via `segments` parameter in nodal tools |
+| **Production and injection modes** | **Full** | `injection` flag on `flowing_bhp`; `generate_vfp_inj_table` for injection VLP |
+| **GasPVT and OilPVT wrapper classes** | **Full** | Used internally by nodal tools for consistent fluid characterization |
+| **VFPPROD/VFPINJ table generation** | **Full** | `generate_vfp_prod_table`, `generate_vfp_inj_table` tools |
+| **Multi-gas brine (Soreide-Whitson VLE)** | **Full** | `soreide_whitson_vle` tool with CO₂, H₂S, N₂, H₂ mole fractions |
+| **IAPWS-IF97 freshwater density** | **Full** | Handled internally by pyRestToolbox brine functions |
+| **Hydrogen-capable gas PVT (BUR/Peng-Robinson)** | **Full** | `gas_z_factor` with `method: BUR` and `h2` parameter; all gas tools support H₂ |
+| **Metric unit support** | **Full** | `metric: true` flag on all tools using Eclipse METRIC conventions |
+| **Simulation tables (PVDO/PVDG/PVTO/PVTW)** | **Full** | `generate_black_oil_table_og`, `generate_pvtw_table`, `black_oil_table` tools |
+| **Rel perm fitting (Corey, LET, Jerauld)** | **Full** | `fit_relative_permeability`, `fit_relative_permeability_best`, `evaluate_jerauld`, `check_let_physical` tools |
+| **Input validation & proper exceptions** | **Full** | Pydantic models with field constraints on all 108 tools |
+| **DCA (Arps, Duong, ratio analysis)** | **Full** | 9 DCA tools covering all decline types |
+| **Material Balance (gas P/Z, oil Havlena-Odeh)** | **Full** | `gas_material_balance`, `oil_material_balance` tools |
+
+### Functions Not Exposed as MCP Tools
+
+Some pyResToolbox functions are used internally but not exposed as standalone MCP tools:
+
+| Function | Reason |
+|----------|--------|
+| `GasPVT` / `OilPVT` classes | Used internally by nodal tools; individual PVT tools cover same calculations |
+| `darcy_gas` | Low-level function; `gas_rate_radial` / `gas_rate_linear` provide higher-level access |
+| `oil_rs_bub` / `oil_rs_st` / `sg_st_gas` | Specialized functions covered by `oil_solution_gor` tool |
+| `oil_harmonize_pb_rsb` | Covered by `oil_harmonize` tool |
+| `gas_ponz2p` | Inverse P/Z lookup; covered by `gas_pressure_from_pz` tool |
+| `brine_props` / `make_pvtw_table` (brine) | Covered by `calculate_brine_properties` and `generate_pvtw_table` tools |
+| `validate_methods` | Internal validation utility |
+
+---
+
 ## Development
 
 ### Running Tests
@@ -706,7 +752,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions. Quick overview
 - **DAK** - Dranchuk & Abou-Kassem (1975) - *Recommended for hydrocarbon gases*
 - **HY** - Hall & Yarborough (1973) - *Fast, good for most conditions*
 - **WYW** - Wang, Ye & Wu (2021) - *Reasonably fast*
-- **BUR** - Burgoyne, Nielsen & Stanko (2025) - *Universal EOS-based correlation, best for high concentrations of non-hydrocarbons (CO₂, H₂S, N₂, H₂), including 100% CO₂. Only method supporting H₂. (SPE-229932-MS)*
+- **BUR** - Burgoyne, Nielsen & Stanko (2025) - *Universal EOS-based correlation (5-component Peng-Robinson), best for high concentrations of non-hydrocarbons (CO₂, H₂S, N₂, H₂), including pure CO₂ and up to 30%+ hydrogen. Only method supporting H₂. (SPE-229932-MS)*
 
 **Critical Properties**
 - **PMC** - Piper, McCain & Corredor (1993) - *Recommended for hydrocarbon gases*
@@ -1012,8 +1058,8 @@ If you use this MCP server in academic or commercial work, please cite the origi
   author = {Burgoyne, Mark W.},
   title = {pyResToolbox: A Collection of Reservoir Engineering Utilities},
   url = {https://github.com/mwburgoyne/pyResToolbox},
-  version = {2.x},
-  year = {2024}
+  version = {3.0.4},
+  year = {2025}
 }
 ```
 

@@ -1,18 +1,9 @@
 """Main FastMCP Server for pyResToolbox."""
 
 from fastmcp import FastMCP
-from .config import SERVER_NAME, SERVER_VERSION, SERVER_DESCRIPTION
 
-# Initialize FastMCP server
-mcp = FastMCP(
-    name=SERVER_NAME,
-)
-
-# Import and register resources
+from .config import SERVER_NAME
 from .resources.config_resources import register_config_resources
-register_config_resources(mcp)
-
-# Import and register tools
 from .tools.oil_tools import register_oil_tools
 from .tools.gas_tools import register_gas_tools
 from .tools.inflow_tools import register_inflow_tools
@@ -27,6 +18,15 @@ from .tools.recommend_tools import register_recommend_tools
 from .tools.sensitivity_tools import register_sensitivity_tools
 from .tools.geomech_tools import register_geomech_tools
 
+# Initialize FastMCP server
+mcp = FastMCP(
+    name=SERVER_NAME,
+)
+
+# Register resources
+register_config_resources(mcp)
+
+# Register tools
 register_oil_tools(mcp)
 register_gas_tools(mcp)
 register_inflow_tools(mcp)

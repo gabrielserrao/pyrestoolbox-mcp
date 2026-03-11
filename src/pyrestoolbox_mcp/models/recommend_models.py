@@ -13,8 +13,10 @@ class RecommendMethodsRequest(BaseModel):
     n2: float = Field(0.0, ge=0, le=1, description="N2 mole fraction")
     h2: float = Field(0.0, ge=0, le=1, description="H2 mole fraction")
     api: Optional[float] = Field(
-        None, gt=0, le=100,
-        description="Oil API gravity. If provided, includes oil method recommendations"
+        None,
+        gt=0,
+        le=100,
+        description="Oil API gravity. If provided, includes oil method recommendations",
     )
     deviation: float = Field(
         0.0, ge=0, le=90, description="Max wellbore deviation from vertical (degrees)"

@@ -2,7 +2,6 @@
 
 import numpy as np
 from fastmcp import FastMCP
-from typing import Dict, Any
 
 from ..models.geomech_models import (
     VerticalStressRequest,
@@ -173,7 +172,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             ratio = request.observed_value / request.normal_value
 
         # Eaton equation
-        pore_pressure = request.overburden_psi - (request.overburden_psi - hydrostatic) * (ratio ** request.eaton_exponent)
+        pore_pressure = request.overburden_psi - (request.overburden_psi - hydrostatic) * (
+            ratio**request.eaton_exponent
+        )
 
         gradient = pore_pressure / request.depth
         overpressure = pore_pressure - hydrostatic
@@ -313,11 +314,15 @@ def register_geomech_tools(mcp: FastMCP) -> None:
 
         # Calculate minimum horizontal stress using poroelastic equation
         nu = request.poisson_ratio
-        sigma_h_min = (nu / (1 - nu)) * sigma_v_eff + request.biot_coefficient * request.pore_pressure
+        sigma_h_min = (
+            nu / (1 - nu)
+        ) * sigma_v_eff + request.biot_coefficient * request.pore_pressure
 
         # Estimate maximum horizontal stress based on tectonic regime
         # Simple model: linear interpolation based on tectonic factor
-        sigma_h_max = sigma_h_min + request.tectonic_factor * (request.vertical_stress - sigma_h_min)
+        sigma_h_max = sigma_h_min + request.tectonic_factor * (
+            request.vertical_stress - sigma_h_min
+        )
 
         # Determine stress regime
         if request.tectonic_factor < 0.3:
@@ -382,13 +387,15 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         Expected: G ≈ 400,000 psi, K ≈ 666,667 psi
         """
         # Count how many parameters are provided
-        params_provided = sum([
-            request.youngs_modulus is not None,
-            request.bulk_modulus is not None,
-            request.shear_modulus is not None,
-            request.poisson_ratio is not None,
-            request.lame_parameter is not None,
-        ])
+        params_provided = sum(
+            [
+                request.youngs_modulus is not None,
+                request.bulk_modulus is not None,
+                request.shear_modulus is not None,
+                request.poisson_ratio is not None,
+                request.lame_parameter is not None,
+            ]
+        )
 
         if params_provided < 2:
             raise ValueError("Must provide at least 2 elastic parameters")
@@ -685,7 +692,8 @@ def register_geomech_tools(mcp: FastMCP) -> None:
 
         # Tangential stress at wellbore wall (Kirsch)
         sigma_theta = (
-            request.sigma_h_max + request.sigma_h_min
+            request.sigma_h_max
+            + request.sigma_h_min
             - 2 * (request.sigma_h_max - request.sigma_h_min) * np.cos(2 * theta_rad)
             - mud_pressure
         )
@@ -699,7 +707,6 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Check failure using Mohr-Coulomb
         phi_rad = np.deg2rad(request.friction_angle)
         sin_phi = np.sin(phi_rad)
-        cos_phi = np.cos(phi_rad)
 
         # UCS
         ucs = request.ucs
@@ -734,7 +741,8 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Set sigma_theta_eff = sigma_failure and solve for mud_pressure
         sigma_theta_target = sigma_failure + request.pore_pressure
         mud_pressure_critical = (
-            request.sigma_h_max + request.sigma_h_min
+            request.sigma_h_max
+            + request.sigma_h_min
             - 2 * (request.sigma_h_max - request.sigma_h_min)
             - sigma_theta_target
         )
@@ -807,16 +815,22 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         elif request.method == "hubbert_willis":
             # Hubbert-Willis: simple poroelastic relationship
             nu = request.poisson_ratio
-            fracture_pressure = (nu / (1 - nu)) * (request.vertical_stress - request.pore_pressure) + request.pore_pressure
+            fracture_pressure = (nu / (1 - nu)) * (
+                request.vertical_stress - request.pore_pressure
+            ) + request.pore_pressure
         elif request.method == "eaton":
             # Eaton method (same as Hubbert-Willis for this simplified case)
             nu = request.poisson_ratio
-            fracture_pressure = (nu / (1 - nu)) * (request.vertical_stress - request.pore_pressure) + request.pore_pressure
+            fracture_pressure = (nu / (1 - nu)) * (
+                request.vertical_stress - request.pore_pressure
+            ) + request.pore_pressure
         else:  # matthews_kelly
             # Matthews-Kelly method with assumed Ki = 0.75 (typical)
             Ki = 0.75
             overburden_grad = request.vertical_stress / request.depth
-            fracture_pressure = overburden_grad * (request.depth - 1000) * (Ki) + request.pore_pressure
+            fracture_pressure = (
+                overburden_grad * (request.depth - 1000) * (Ki) + request.pore_pressure
+            )
 
         # Calculate gradient
         fracture_gradient = fracture_pressure / request.depth
@@ -995,9 +1009,6 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         cos_phi = np.cos(phi_rad)
         ucs = 2 * request.cohesion * cos_phi / (1 - sin_phi)
 
-        # q factor
-        q = (1 + sin_phi) / (1 - sin_phi)
-
         # For critical case at breakout location (θ = 90°)
         # σθ = σh_max + σh_min - 2(σh_max - σh_min) - Pmud
         # σθ = 3σh_min - σh_max - Pmud
@@ -1014,10 +1025,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Pmud = 3σh_min - σh_max - Pp + UCS
 
         collapse_pressure = (
-            3 * request.sigma_h_min
-            - request.sigma_h_max
-            - request.pore_pressure
-            + ucs
+            3 * request.sigma_h_min - request.sigma_h_max - request.pore_pressure + ucs
         )
 
         # Ensure positive pressure
@@ -1214,7 +1222,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
                 # Calculate from elastic moduli
                 bulk_comp = (1 - 2 * request.poisson_ratio) / request.youngs_modulus
             else:
-                raise ValueError("Must provide either bulk_compressibility or (youngs_modulus and poisson_ratio)")
+                raise ValueError(
+                    "Must provide either bulk_compressibility or (youngs_modulus and poisson_ratio)"
+                )
         else:
             bulk_comp = request.bulk_compressibility
 
@@ -1321,7 +1331,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             "sigma_h_min": float(sigma_h_min),
             "fracture_gradient": float(fracture_gradient),
             "equivalent_mud_weight": float(equivalent_mud_weight),
-            "breakdown_pressure": float(breakdown_pressure) if breakdown_pressure is not None else None,
+            "breakdown_pressure": (
+                float(breakdown_pressure) if breakdown_pressure is not None else None
+            ),
             "test_pressure_at_depth": float(total_pressure),
             "units": "psi (pressure), psi/ft (gradient), ppg (MW)",
             "inputs": request.model_dump(),
@@ -1390,7 +1402,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         Expected: avg width ≈ 0.2-0.5 inches
         """
         # Calculate plane strain modulus
-        E_prime = request.youngs_modulus / (1 - request.poisson_ratio ** 2)
+        E_prime = request.youngs_modulus / (1 - request.poisson_ratio**2)
 
         if request.model == "PKN":
             # PKN model: w_avg = C × Pnet × h / E'
@@ -1489,16 +1501,16 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         result = {
             "normal_faulting": {
                 "sigma_h_min_range": [float(nf_shmin_min), float(nf_shmin_max)],
-                "description": "σv > σH > σh (extensional)"
+                "description": "σv > σH > σh (extensional)",
             },
             "strike_slip": {
                 "sigma_h_min_min": float(ss_shmin_min),
                 "sigma_H_max_max": float(ss_shmax_max),
-                "description": "σH > σv > σh (shear)"
+                "description": "σH > σv > σh (shear)",
             },
             "reverse_faulting": {
                 "sigma_H_max_range": [float(rf_shmax_min), float(rf_shmax_max)],
-                "description": "σH > σh > σv (compressional)"
+                "description": "σH > σh > σv (compressional)",
             },
             "friction_coefficient": float(mu),
             "stress_ratio_limit": float(q),
@@ -1536,8 +1548,12 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             result["actual_stress_state"] = {
                 "regime": stress_regime,
                 "within_frictional_limits": within_polygon,
-                "sigma_v_over_sigma_h_min": float(sigma_v_eff / sigma_h_min_eff) if sigma_h_min_eff > 0 else None,
-                "sigma_H_max_over_sigma_v": float(sigma_h_max_eff / sigma_v_eff) if sigma_v_eff > 0 else None,
+                "sigma_v_over_sigma_h_min": (
+                    float(sigma_v_eff / sigma_h_min_eff) if sigma_h_min_eff > 0 else None
+                ),
+                "sigma_H_max_over_sigma_v": (
+                    float(sigma_h_max_eff / sigma_v_eff) if sigma_v_eff > 0 else None
+                ),
             }
 
         return result
@@ -1624,10 +1640,14 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             recommendation = "Natural completion may be acceptable. Monitor for sand production."
         elif critical_drawdown > 500 or ucs > 1000:
             sanding_risk = "moderate"
-            recommendation = "Consider gravel pack or frac-pack. Rate-limited production recommended."
+            recommendation = (
+                "Consider gravel pack or frac-pack. Rate-limited production recommended."
+            )
         else:
             sanding_risk = "high"
-            recommendation = "Sand control required. Consider screens, gravel pack, or chemical consolidation."
+            recommendation = (
+                "Sand control required. Consider screens, gravel pack, or chemical consolidation."
+            )
 
         # TWC (Thick Wall Cylinder) strength estimate
         twc_factor = 2.0  # Typical TWC/UCS ratio
@@ -1680,8 +1700,6 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         """
         # Convert angles to radians
         dip_rad = np.deg2rad(request.fault_dip)
-        strike_rad = np.deg2rad(request.fault_strike)
-        sigma1_az_rad = np.deg2rad(request.sigma_1_azimuth)
 
         # Effective stresses
         sigma_1_eff = request.sigma_1 - request.pore_pressure
@@ -1698,14 +1716,20 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Effective angle (simplified: dip angle used directly)
         theta = dip_rad
 
-        sigma_n = (sigma_1_eff + sigma_3_eff) / 2 + (sigma_1_eff - sigma_3_eff) / 2 * np.cos(2 * theta)
+        sigma_n = (sigma_1_eff + sigma_3_eff) / 2 + (sigma_1_eff - sigma_3_eff) / 2 * np.cos(
+            2 * theta
+        )
         tau = abs((sigma_1_eff - sigma_3_eff) / 2 * np.sin(2 * theta))
 
         # Slip tendency
         slip_tendency = tau / sigma_n if sigma_n > 0 else 0
 
         # Dilation tendency
-        dilation_tendency = (sigma_1_eff - sigma_n) / (sigma_1_eff - sigma_3_eff) if (sigma_1_eff - sigma_3_eff) > 0 else 0
+        dilation_tendency = (
+            (sigma_1_eff - sigma_n) / (sigma_1_eff - sigma_3_eff)
+            if (sigma_1_eff - sigma_3_eff) > 0
+            else 0
+        )
 
         # Coulomb Failure Stress
         cfs = tau - request.friction_coefficient * sigma_n - request.cohesion
@@ -1799,16 +1823,10 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         sin_i = np.sin(inc)
 
         # Stress tensor components in wellbore coordinates
-        sigma_xx = (
-            (sigma_H * cos_a**2 + sigma_h * sin_a**2) * cos_i**2
-            + sigma_v * sin_i**2
-        )
+        sigma_xx = (sigma_H * cos_a**2 + sigma_h * sin_a**2) * cos_i**2 + sigma_v * sin_i**2
         sigma_yy = sigma_H * sin_a**2 + sigma_h * cos_a**2
 
-        sigma_zz = (
-            (sigma_H * cos_a**2 + sigma_h * sin_a**2) * sin_i**2
-            + sigma_v * cos_i**2
-        )
+        sigma_zz = (sigma_H * cos_a**2 + sigma_h * sin_a**2) * sin_i**2 + sigma_v * cos_i**2
 
         tau_xy = 0.5 * (sigma_h - sigma_H) * np.sin(2 * alpha) * cos_i
         tau_xz = 0.5 * (sigma_H * cos_a**2 + sigma_h * sin_a**2 - sigma_v) * np.sin(2 * inc)
@@ -1990,7 +2008,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             k_dp = 3 * C / np.sqrt(9 + 12 * tan_phi**2)
 
             I1 = sigma_1 + sigma_2 + sigma_3
-            J2 = ((sigma_1 - sigma_2)**2 + (sigma_2 - sigma_3)**2 + (sigma_1 - sigma_3)**2) / 6
+            J2 = (
+                (sigma_1 - sigma_2) ** 2 + (sigma_2 - sigma_3) ** 2 + (sigma_1 - sigma_3) ** 2
+            ) / 6
             sqrt_J2 = np.sqrt(J2)
 
             # Failure when sqrt(J2) = k + alpha * I1
@@ -2011,7 +2031,13 @@ def register_geomech_tools(mcp: FastMCP) -> None:
             # τoct = a + b × σm,2
             # where σm,2 = (σ1 + σ3) / 2
 
-            tau_oct = np.sqrt(2) / 3 * np.sqrt((sigma_1 - sigma_2)**2 + (sigma_2 - sigma_3)**2 + (sigma_1 - sigma_3)**2)
+            tau_oct = (
+                np.sqrt(2)
+                / 3
+                * np.sqrt(
+                    (sigma_1 - sigma_2) ** 2 + (sigma_2 - sigma_3) ** 2 + (sigma_1 - sigma_3) ** 2
+                )
+            )
             sigma_m2 = (sigma_1 + sigma_3) / 2
 
             # Mogi constants from M-C parameters
@@ -2038,7 +2064,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
 
             # Lade parameter
             eta = 4 * tan_phi**2 * (9 - 7 * sin_phi) / (1 - sin_phi)
-            lade_lhs = (I1**3 / I3 - 27)
+            lade_lhs = I1**3 / I3 - 27
 
             results["modified_lade"] = {
                 "I1": float(I1),
@@ -2053,7 +2079,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         if "modified_wiebols" in request.criteria:
             # Simplified version
             I1 = sigma_1 + sigma_2 + sigma_3
-            J2 = ((sigma_1 - sigma_2)**2 + (sigma_2 - sigma_3)**2 + (sigma_1 - sigma_3)**2) / 6
+            J2 = (
+                (sigma_1 - sigma_2) ** 2 + (sigma_2 - sigma_3) ** 2 + (sigma_1 - sigma_3) ** 2
+            ) / 6
 
             # Constants derived from UCS and friction angle
             C1 = UCS / 3  # Simplified
@@ -2118,7 +2146,6 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Mohr-Coulomb parameters
         phi_rad = np.deg2rad(request.friction_angle)
         sin_phi = np.sin(phi_rad)
-        cos_phi = np.cos(phi_rad)
 
         # Calculate rock strength at breakout edge
         # At breakout edge (θ = 90° - wbo/2), rock is at failure
@@ -2226,7 +2253,12 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Permeable case
         eta = request.poroelastic_constant
         if eta < 1.0:
-            numerator = 3 * request.sigma_h_min - request.sigma_h_max + request.tensile_strength - eta * request.pore_pressure
+            numerator = (
+                3 * request.sigma_h_min
+                - request.sigma_h_max
+                + request.tensile_strength
+                - eta * request.pore_pressure
+            )
             breakdown_perm = numerator / (1 - eta)
         else:
             breakdown_perm = breakdown_imperm
@@ -2480,7 +2512,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         elif request.correlation == "horsrud" and request.sonic_dt is not None:
             # Horsrud (2001) for shale
             vp_km_s = 304.8 / request.sonic_dt / 3.281  # Convert to km/s
-            ucs = 0.77 * (vp_km_s * 1000)**2.93 / 145.038  # Convert MPa to psi
+            ucs = 0.77 * (vp_km_s * 1000) ** 2.93 / 145.038  # Convert MPa to psi
             lithology_range = [500, 8000]
 
         elif request.correlation == "chang" and request.youngs_modulus is not None:
@@ -2496,7 +2528,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
 
         elif request.correlation == "vernik" and request.porosity is not None:
             # Vernik (1993) for carbonate
-            ucs = 254 * (1 - 2.7 * request.porosity)**2 * 145.038  # MPa to psi
+            ucs = 254 * (1 - 2.7 * request.porosity) ** 2 * 145.038  # MPa to psi
             lithology_range = [2000, 25000]
 
         else:
@@ -2505,7 +2537,7 @@ def register_geomech_tools(mcp: FastMCP) -> None:
                 ucs = 1200 * np.exp(-0.036 * request.sonic_dt)
                 correlation_used = "mcnally (default)"
             elif request.porosity is not None:
-                ucs = 254 * (1 - 2.7 * request.porosity)**2 * 145.038
+                ucs = 254 * (1 - 2.7 * request.porosity) ** 2 * 145.038
                 correlation_used = "vernik (porosity-based)"
             elif request.youngs_modulus is not None:
                 E_GPa = request.youngs_modulus / 145038
@@ -2522,9 +2554,11 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         ucs = max(0, float(ucs))
 
         # Confidence based on correlation applicability
-        if (request.lithology == "sandstone" and request.correlation == "mcnally") or \
-           (request.lithology == "shale" and request.correlation in ["horsrud", "lal"]) or \
-           (request.lithology == "carbonate" and request.correlation == "vernik"):
+        if (
+            (request.lithology == "sandstone" and request.correlation == "mcnally")
+            or (request.lithology == "shale" and request.correlation in ["horsrud", "lal"])
+            or (request.lithology == "carbonate" and request.correlation == "vernik")
+        ):
             confidence = "high"
         else:
             confidence = "moderate - verify with core data"
@@ -2579,7 +2613,6 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Mohr-Coulomb parameters
         phi_rad = np.deg2rad(request.friction_angle)
         sin_phi = np.sin(phi_rad)
-        cos_phi = np.cos(phi_rad)
 
         # q factor
         q = (1 + sin_phi) / (1 - sin_phi)
@@ -2604,7 +2637,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         # Pwf_crit = (3σH_eff - σh_eff + (1+q)×Pp - UCS) / (1 + q)
 
         ucs = request.ucs
-        pwf_crit = (3 * sigma_H_eff - sigma_h_eff + (1 + q) * request.reservoir_pressure - ucs) / (1 + q)
+        pwf_crit = (3 * sigma_H_eff - sigma_h_eff + (1 + q) * request.reservoir_pressure - ucs) / (
+            1 + q
+        )
 
         # Critical drawdown
         critical_drawdown = request.reservoir_pressure - pwf_crit
@@ -2620,7 +2655,9 @@ def register_geomech_tools(mcp: FastMCP) -> None:
         if critical_drawdown < 500:
             failure_mechanism = "Shear failure - weak rock, sand control needed"
         elif critical_drawdown < 1500:
-            failure_mechanism = "Shear failure possible at high rates - rate-restrict or sand control"
+            failure_mechanism = (
+                "Shear failure possible at high rates - rate-restrict or sand control"
+            )
         else:
             failure_mechanism = "Rock is strong - natural completion may be acceptable"
 

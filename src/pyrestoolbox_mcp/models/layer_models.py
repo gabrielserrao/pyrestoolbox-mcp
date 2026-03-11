@@ -1,7 +1,7 @@
 """Pydantic models for Layer/Heterogeneity calculations."""
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import List, Union
+from typing import List
 
 
 class LorenzRequest(BaseModel):
@@ -22,9 +22,7 @@ class FlowFractionRequest(BaseModel):
         }
     )
 
-    flow_frac: List[float] = Field(
-        ..., min_length=2, description="Flow fractions per layer"
-    )
+    flow_frac: List[float] = Field(..., min_length=2, description="Flow fractions per layer")
     perm_frac: List[float] = Field(
         ..., min_length=2, description="Permeability-thickness fractions per layer"
     )
@@ -60,6 +58,4 @@ class LayerDistributionRequest(BaseModel):
     k_avg: float = Field(
         1.0, gt=0, description="Average permeability (mD, default=1 for normalized)"
     )
-    normalize: bool = Field(
-        True, description="Normalize output (h and k fractions vs absolute)"
-    )
+    normalize: bool = Field(True, description="Normalize output (h and k fractions vs absolute)")

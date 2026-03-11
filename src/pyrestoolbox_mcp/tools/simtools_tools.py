@@ -323,14 +323,11 @@ def register_simtools_tools(mcp: FastMCP) -> None:
         # influence_tables returns tuple of (tD, list of pD lists)
         # Convert to DataFrame-like structure and convert mpmath types to float
         tD, pD_lists = result
-        
+
         # Convert mpmath types to regular floats
         tD_list = [float(t) for t in tD]
-        pD_converted = [
-            [float(p) for p in pd_array]
-            for pd_array in pD_lists
-        ]
-        
+        pD_converted = [[float(p) for p in pd_array] for pd_array in pD_lists]
+
         return {
             "dimensionless_time": tD_list,
             "dimensionless_pressures": pD_converted,
@@ -481,8 +478,7 @@ def register_simtools_tools(mcp: FastMCP) -> None:
         try:
             # Extract problem cells from PRT file
             results = simtools.ix_extract_problem_cells(
-                filename=request.filename,
-                silent=request.silent
+                filename=request.filename, silent=request.silent
             )
 
             if not results:
@@ -497,15 +493,17 @@ def register_simtools_tools(mcp: FastMCP) -> None:
             # Process results into structured format
             problem_list = []
             for problem in results:
-                problem_list.append({
-                    "timestep": problem.get("timestep", "Unknown"),
-                    "iteration": problem.get("iteration", "Unknown"),
-                    "i": problem.get("i", -1),
-                    "j": problem.get("j", -1),
-                    "k": problem.get("k", -1),
-                    "error_type": problem.get("error_type", "Unknown"),
-                    "message": problem.get("message", ""),
-                })
+                problem_list.append(
+                    {
+                        "timestep": problem.get("timestep", "Unknown"),
+                        "iteration": problem.get("iteration", "Unknown"),
+                        "i": problem.get("i", -1),
+                        "j": problem.get("j", -1),
+                        "k": problem.get("k", -1),
+                        "error_type": problem.get("error_type", "Unknown"),
+                        "message": problem.get("message", ""),
+                    }
+                )
 
             return {
                 "problem_cells": problem_list,
@@ -579,7 +577,7 @@ def register_simtools_tools(mcp: FastMCP) -> None:
             results = simtools.zip_check_sim_deck(
                 files2scrape=request.files2scrape,
                 tozip=request.tozip,
-                console_summary=request.console_summary
+                console_summary=request.console_summary,
             )
 
             # Parse results (format depends on pyrestoolbox implementation)
@@ -648,18 +646,27 @@ def register_simtools_tools(mcp: FastMCP) -> None:
         **Returns:** Oil and gas PVT table data.
         """
         result = simtools.make_bot_og(
-            pi=request.pi, api=request.api, degf=request.degf,
-            sg_g=request.sg_g, pmax=request.pmax, pb=request.pb,
-            rsb=request.rsb, pmin=request.pmin, nrows=request.nrows,
-            wt=request.wt, ch4_sat=request.ch4_sat,
-            export=request.export, pvto=request.pvto,
-            vis_frac=request.vis_frac, metric=request.metric,
+            pi=request.pi,
+            api=request.api,
+            degf=request.degf,
+            sg_g=request.sg_g,
+            pmax=request.pmax,
+            pb=request.pb,
+            rsb=request.rsb,
+            pmin=request.pmin,
+            nrows=request.nrows,
+            wt=request.wt,
+            ch4_sat=request.ch4_sat,
+            export=request.export,
+            pvto=request.pvto,
+            vis_frac=request.vis_frac,
+            metric=request.metric,
         )
         # Convert DataFrames to dicts
         response = {}
         for key, val in result.items():
-            if hasattr(val, 'to_dict'):
-                response[key] = val.to_dict(orient='records')
+            if hasattr(val, "to_dict"):
+                response[key] = val.to_dict(orient="records")
             elif isinstance(val, np.ndarray):
                 response[key] = val.tolist()
             elif isinstance(val, (np.floating, np.integer)):
@@ -689,15 +696,20 @@ def register_simtools_tools(mcp: FastMCP) -> None:
         **Returns:** PVTW table data with reference properties.
         """
         result = simtools.make_pvtw_table(
-            pi=request.pi, degf=request.degf, wt=request.wt,
-            ch4_sat=request.ch4_sat, pmin=request.pmin,
-            pmax=request.pmax, nrows=request.nrows,
-            export=request.export, metric=request.metric,
+            pi=request.pi,
+            degf=request.degf,
+            wt=request.wt,
+            ch4_sat=request.ch4_sat,
+            pmin=request.pmin,
+            pmax=request.pmax,
+            nrows=request.nrows,
+            export=request.export,
+            metric=request.metric,
         )
         response = {}
         for key, val in result.items():
-            if hasattr(val, 'to_dict'):
-                response[key] = val.to_dict(orient='records')
+            if hasattr(val, "to_dict"):
+                response[key] = val.to_dict(orient="records")
             elif isinstance(val, np.ndarray):
                 response[key] = val.tolist()
             elif isinstance(val, (np.floating, np.integer)):
@@ -725,8 +737,12 @@ def register_simtools_tools(mcp: FastMCP) -> None:
         """
         family_enum = getattr(kr_family, request.krfamily)
         result = simtools.fit_rel_perm(
-            sw=request.sw, kr=request.kr, krfamily=family_enum,
-            krmax=request.krmax, sw_min=request.sw_min, sw_max=request.sw_max,
+            sw=request.sw,
+            kr=request.kr,
+            krfamily=family_enum,
+            krmax=request.krmax,
+            sw_min=request.sw_min,
+            sw_max=request.sw_max,
         )
         response = {}
         for key, val in result.items():
@@ -754,6 +770,7 @@ def register_simtools_tools(mcp: FastMCP) -> None:
 
         **Returns:** Best model parameters, comparison of all models.
         """
+
         def _serialize(obj):
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
@@ -766,8 +783,11 @@ def register_simtools_tools(mcp: FastMCP) -> None:
             return obj
 
         result = simtools.fit_rel_perm_best(
-            sw=request.sw, kr=request.kr,
-            krmax=request.krmax, sw_min=request.sw_min, sw_max=request.sw_max,
+            sw=request.sw,
+            kr=request.kr,
+            krmax=request.krmax,
+            sw_min=request.sw_min,
+            sw_max=request.sw_max,
         )
         return _serialize(result)
 

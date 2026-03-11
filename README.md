@@ -524,7 +524,8 @@ pyrestoolbox-mcp/
 │   │   ├── layer_tools.py     # 5 heterogeneity tools
 │   │   ├── recommend_tools.py # 4 method recommendation tools
 │   │   ├── sensitivity_tools.py # 2 sensitivity analysis tools
-│   │   └── library_tools.py   # 1 component library tool
+│   │   ├── library_tools.py   # 1 component library tool
+│   │   └── gas_fixes.py       # Upstream bug workarounds
 │   ├── models/                # Pydantic validation models
 │   │   ├── oil_models.py
 │   │   ├── gas_models.py
@@ -538,14 +539,22 @@ pyrestoolbox-mcp/
 │   │   ├── layer_models.py
 │   │   ├── recommend_models.py
 │   │   ├── sensitivity_models.py
-│   │   └── library_models.py
+│   │   ├── library_models.py
+│   │   └── common_models.py
 │   └── resources/             # MCP configuration resources
 │       └── config_resources.py
-├── tests/                     # Test suite (pytest + custom)
+├── tests/                     # Test suite (52 pytest tests)
 │   ├── test_oil_tools.py
 │   ├── test_gas_tools.py
+│   ├── test_geomech_tools.py
+│   ├── test_simtools_new.py
+│   ├── test_dca_tools.py
+│   ├── test_brine_new.py
+│   ├── test_nodal_tools.py
+│   ├── test_matbal_tools.py
+│   ├── test_recommend_tools.py
 │   └── conftest.py
-├── examples/                  # 10 comprehensive workflow examples
+├── examples/                  # 12 comprehensive workflow examples
 │   ├── basic_usage.py
 │   ├── pvt_workflow.py
 │   ├── gas_well_analysis.py

@@ -1,7 +1,7 @@
 """Pydantic models for Brine calculations."""
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Literal, Union, List, Optional
+from typing import Union, List
 
 
 class BrinePropertiesRequest(BaseModel):
@@ -19,21 +19,13 @@ class BrinePropertiesRequest(BaseModel):
         }
     )
 
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
     degf: Union[float, List[float]] = Field(
         ..., description="Temperature (degrees Fahrenheit) - scalar or array"
     )
-    wt: float = Field(
-        ..., ge=0, le=30, description="Brine salinity (weight percent NaCl)"
-    )
-    ch4: float = Field(
-        0.0, ge=0, description="Dissolved CH4 mole fraction (dimensionless)"
-    )
-    co2: float = Field(
-        0.0, ge=0, description="Dissolved CO2 mole fraction (dimensionless)"
-    )
+    wt: float = Field(..., ge=0, le=30, description="Brine salinity (weight percent NaCl)")
+    ch4: float = Field(0.0, ge=0, description="Dissolved CH4 mole fraction (dimensionless)")
+    co2: float = Field(0.0, ge=0, description="Dissolved CO2 mole fraction (dimensionless)")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "degf")
@@ -64,8 +56,12 @@ class CO2BrineMixtureRequest(BaseModel):
         }
     )
 
-    pres: float = Field(..., gt=0, description="Pressure (psia if metric=False, bar if metric=True)")
-    temp: float = Field(..., gt=0, description="Temperature (degF if metric=False, degC if metric=True)")
+    pres: float = Field(
+        ..., gt=0, description="Pressure (psia if metric=False, bar if metric=True)"
+    )
+    temp: float = Field(
+        ..., gt=0, description="Temperature (degF if metric=False, degC if metric=True)"
+    )
     ppm: float = Field(..., ge=0, description="Brine salinity (ppm)")
     metric: bool = Field(False, description="Use metric units (True) or field units (False)")
     cw_sat: float = Field(

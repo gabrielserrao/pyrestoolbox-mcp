@@ -253,9 +253,11 @@ def register_layer_tools(mcp: FastMCP) -> None:
             "interpretation": (
                 "High conformance (L<0.3)"
                 if lorenz < 0.3
-                else "Moderate conformance (0.3≤L<0.6)"
-                if lorenz < 0.6
-                else "Poor conformance (L≥0.6)"
+                else (
+                    "Moderate conformance (0.3≤L<0.6)"
+                    if lorenz < 0.6
+                    else "Poor conformance (L≥0.6)"
+                )
             ),
             "inputs": request.model_dump(),
         }
@@ -325,8 +327,10 @@ def register_layer_tools(mcp: FastMCP) -> None:
         # lorenz_2_flow_frac returns a scalar flow fraction, not arrays
         # We need to generate a full curve, so we'll call it multiple times
         phih_values = np.linspace(0, 1, 20)
-        flow_values = [layer.lorenz_2_flow_frac(lorenz=request.value, phih_frac=phi) for phi in phih_values]
-        
+        flow_values = [
+            layer.lorenz_2_flow_frac(lorenz=request.value, phih_frac=phi) for phi in phih_values
+        ]
+
         # Convert to lists
         flow_capacity = flow_values
         storage_capacity = phih_values.tolist()
@@ -444,21 +448,21 @@ def register_layer_tools(mcp: FastMCP) -> None:
             nlayers=request.nlay,
             k_avg=request.k_avg,
         )
-        
+
         # Assume equal thickness layers
         h_values = np.ones(request.nlay) * request.h / request.nlay
-        
+
         layer_data = []
         for i in range(request.nlay):
-            layer_data.append({
-                "layer": i + 1,
-                "thickness_ft": float(h_values[i]),
-                "permeability_md": float(k_values[i]),
-                "thickness_fraction": float(h_values[i] / np.sum(h_values)),
-                "kh_fraction": float(
-                    k_values[i] * h_values[i] / np.sum(k_values * h_values)
-                ),
-            })
+            layer_data.append(
+                {
+                    "layer": i + 1,
+                    "thickness_ft": float(h_values[i]),
+                    "permeability_md": float(k_values[i]),
+                    "thickness_fraction": float(h_values[i] / np.sum(h_values)),
+                    "kh_fraction": float(k_values[i] * h_values[i] / np.sum(k_values * h_values)),
+                }
+            )
 
         # Calculate statistics
         statistics = {

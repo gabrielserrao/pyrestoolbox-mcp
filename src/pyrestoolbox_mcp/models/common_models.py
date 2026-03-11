@@ -32,9 +32,7 @@ class MethodResponse(BaseModel):
         }
     )
 
-    value: Union[float, List[float], dict] = Field(
-        ..., description="Calculated value(s)"
-    )
+    value: Union[float, List[float], dict] = Field(..., description="Calculated value(s)")
     method: str = Field(..., description="Calculation method used")
     units: str = Field(..., description="Units of the result")
     inputs: dict = Field(..., description="Input parameters used")

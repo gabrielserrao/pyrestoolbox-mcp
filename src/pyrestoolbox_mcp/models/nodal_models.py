@@ -1,6 +1,6 @@
 """Pydantic models for Nodal Analysis / VLP / IPR calculations."""
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from typing import Literal, List, Optional
 
 
@@ -55,7 +55,8 @@ class FBHPRequest(BaseModel):
     thp: float = Field(..., gt=0, description="Tubing head pressure (psia | barsa)")
     completion: CompletionModel = Field(..., description="Wellbore completion")
     vlp_method: Literal["HB", "WG", "GRAY", "BB"] = Field(
-        "WG", description="VLP correlation: HB (Hagedorn-Brown), WG (Woldesemayat-Ghajar), GRAY, BB (Beggs & Brill)"
+        "WG",
+        description="VLP correlation: HB (Hagedorn-Brown), WG (Woldesemayat-Ghajar), GRAY, BB (Beggs & Brill)",
     )
     well_type: Literal["gas", "oil"] = Field("gas", description="Well type")
     gas_rate_mmscfd: float = Field(0.0, ge=0, description="Gas rate (MMscf/d | sm3/d)")
@@ -63,8 +64,12 @@ class FBHPRequest(BaseModel):
     water_rate_bwpd: float = Field(0.0, ge=0, description="Water rate (STB/d | sm3/d)")
     oil_viscosity: float = Field(1.0, gt=0, description="Condensate/oil viscosity (cP)")
     api: float = Field(45.0, gt=0, le=100, description="Condensate/oil API gravity")
-    reservoir_pressure: float = Field(0.0, ge=0, description="Reservoir pressure for condensate dropout")
-    total_liquid_stbpd: float = Field(0.0, ge=0, description="Total liquid rate for oil wells (STB/d)")
+    reservoir_pressure: float = Field(
+        0.0, ge=0, description="Reservoir pressure for condensate dropout"
+    )
+    total_liquid_stbpd: float = Field(
+        0.0, ge=0, description="Total liquid rate for oil wells (STB/d)"
+    )
     gor: float = Field(0.0, ge=0, description="Producing GOR for oil wells (scf/stb)")
     water_cut: float = Field(0.0, ge=0, le=1, description="Water cut fraction (0-1)")
     water_sg: float = Field(1.07, gt=0, description="Water specific gravity")

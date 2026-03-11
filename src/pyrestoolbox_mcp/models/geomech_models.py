@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Literal, Union, List, Optional
-import numpy as np
 
 
 class VerticalStressRequest(BaseModel):
@@ -20,9 +19,7 @@ class VerticalStressRequest(BaseModel):
     )
 
     depth: float = Field(..., gt=0, description="True vertical depth below surface (ft)")
-    water_depth: float = Field(
-        0.0, ge=0, description="Water depth for offshore wells (ft)"
-    )
+    water_depth: float = Field(0.0, ge=0, description="Water depth for offshore wells (ft)")
     avg_density: float = Field(
         144.0, gt=0, le=300, description="Average bulk density of overburden (lb/ft³)"
     )
@@ -58,9 +55,7 @@ class PorePressureEatonRequest(BaseModel):
     eaton_exponent: float = Field(
         3.0, gt=0, le=5, description="Eaton exponent (3.0 for sonic, 1.2 for resistivity)"
     )
-    method: Literal["sonic", "resistivity"] = Field(
-        "sonic", description="Method type"
-    )
+    method: Literal["sonic", "resistivity"] = Field("sonic", description="Method type")
 
 
 class EffectiveStressRequest(BaseModel):
@@ -108,11 +103,12 @@ class HorizontalStressRequest(BaseModel):
         ..., gt=0, lt=0.5, description="Poisson's ratio (0.15-0.40 typical)"
     )
     tectonic_factor: float = Field(
-        0.0, ge=0, le=1, description="Tectonic stress multiplier (0=passive, 0.5=strike-slip, 1.0=reverse)"
+        0.0,
+        ge=0,
+        le=1,
+        description="Tectonic stress multiplier (0=passive, 0.5=strike-slip, 1.0=reverse)",
     )
-    biot_coefficient: float = Field(
-        1.0, gt=0, le=1, description="Biot's coefficient"
-    )
+    biot_coefficient: float = Field(1.0, gt=0, le=1, description="Biot's coefficient")
 
 
 class ElasticModuliRequest(BaseModel):
@@ -179,7 +175,9 @@ class DynamicToStaticRequest(BaseModel):
     )
 
     dynamic_youngs: Optional[float] = Field(None, gt=0, description="Dynamic Young's modulus (psi)")
-    dynamic_poisson: Optional[float] = Field(None, gt=0, lt=0.5, description="Dynamic Poisson's ratio")
+    dynamic_poisson: Optional[float] = Field(
+        None, gt=0, lt=0.5, description="Dynamic Poisson's ratio"
+    )
     correlation: Literal["eissa_kazi", "plona_cook", "linear"] = Field(
         "eissa_kazi", description="Correlation method"
     )
@@ -209,13 +207,9 @@ class BreakoutWidthRequest(BaseModel):
     sigma_h_min: float = Field(..., gt=0, description="Minimum horizontal stress (psi)")
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     mud_weight: float = Field(..., gt=0, description="Drilling fluid density (ppg)")
-    wellbore_azimuth: float = Field(
-        ..., ge=0, le=360, description="Well azimuth (degrees, 0-360)"
-    )
+    wellbore_azimuth: float = Field(..., ge=0, le=360, description="Well azimuth (degrees, 0-360)")
     ucs: float = Field(..., gt=0, description="Unconfined compressive strength (psi)")
-    friction_angle: float = Field(
-        ..., gt=0, lt=90, description="Internal friction angle (degrees)"
-    )
+    friction_angle: float = Field(..., gt=0, lt=90, description="Internal friction angle (degrees)")
 
 
 class FractureGradientRequest(BaseModel):
@@ -234,7 +228,9 @@ class FractureGradientRequest(BaseModel):
     )
 
     depth: float = Field(..., gt=0, description="True vertical depth (ft)")
-    sigma_h_min: Optional[float] = Field(None, gt=0, description="Minimum horizontal stress (psi) if known")
+    sigma_h_min: Optional[float] = Field(
+        None, gt=0, description="Minimum horizontal stress (psi) if known"
+    )
     vertical_stress: float = Field(..., gt=0, description="Overburden stress (psi)")
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     poisson_ratio: float = Field(
@@ -263,13 +259,13 @@ class MudWeightWindowRequest(BaseModel):
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     fracture_pressure: float = Field(..., gt=0, description="Formation fracture pressure (psi)")
     depth: float = Field(..., gt=0, description="True vertical depth (ft)")
-    collapse_pressure: Optional[float] = Field(None, gt=0, description="Collapse pressure for stability (psi)")
+    collapse_pressure: Optional[float] = Field(
+        None, gt=0, description="Collapse pressure for stability (psi)"
+    )
     safety_margin_overbalance: float = Field(
         0.5, ge=0, description="Overbalance safety margin (ppg)"
     )
-    safety_margin_fracture: float = Field(
-        0.5, ge=0, description="Fracture safety margin (ppg)"
-    )
+    safety_margin_fracture: float = Field(0.5, ge=0, description="Fracture safety margin (ppg)")
 
 
 class CriticalMudWeightRequest(BaseModel):
@@ -295,9 +291,7 @@ class CriticalMudWeightRequest(BaseModel):
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     cohesion: float = Field(..., ge=0, description="Rock cohesion (psi)")
     friction_angle: float = Field(..., gt=0, lt=90, description="Internal friction angle (degrees)")
-    wellbore_azimuth: float = Field(
-        ..., ge=0, le=360, description="Well azimuth (degrees)"
-    )
+    wellbore_azimuth: float = Field(..., ge=0, le=360, description="Well azimuth (degrees)")
     wellbore_inclination: float = Field(
         0.0, ge=0, le=90, description="Well deviation from vertical (degrees)"
     )
@@ -329,9 +323,7 @@ class ReservoirCompactionRequest(BaseModel):
     )
     youngs_modulus: float = Field(..., gt=0, description="Static Young's modulus (psi)")
     poisson_ratio: float = Field(..., gt=0, lt=0.5, description="Poisson's ratio")
-    biot_coefficient: float = Field(
-        1.0, gt=0, le=1, description="Biot coefficient"
-    )
+    biot_coefficient: float = Field(1.0, gt=0, le=1, description="Biot coefficient")
 
 
 class PoreCompressibilityRequest(BaseModel):
@@ -355,8 +347,12 @@ class PoreCompressibilityRequest(BaseModel):
         3e-7, gt=0, description="Grain compressibility (1/psi, default 3e-7)"
     )
     porosity: float = Field(..., gt=0, lt=1, description="Formation porosity (fraction 0-1)")
-    youngs_modulus: Optional[float] = Field(None, gt=0, description="Young's modulus for calculating Cb (psi)")
-    poisson_ratio: Optional[float] = Field(None, gt=0, lt=0.5, description="Poisson's ratio for calculating Cb")
+    youngs_modulus: Optional[float] = Field(
+        None, gt=0, description="Young's modulus for calculating Cb (psi)"
+    )
+    poisson_ratio: Optional[float] = Field(
+        None, gt=0, lt=0.5, description="Poisson's ratio for calculating Cb"
+    )
 
 
 class LeakOffPressureRequest(BaseModel):
@@ -377,7 +373,9 @@ class LeakOffPressureRequest(BaseModel):
     leak_off_pressure: float = Field(..., gt=0, description="LOT pressure at surface (psi)")
     mud_weight: float = Field(..., gt=0, description="Mud weight during test (ppg)")
     test_depth: float = Field(..., gt=0, description="True vertical depth of test (ft)")
-    pore_pressure: float = Field(..., gt=0, description="Formation pore pressure at test depth (psi)")
+    pore_pressure: float = Field(
+        ..., gt=0, description="Formation pore pressure at test depth (psi)"
+    )
     test_type: Literal["LOT", "FIT"] = Field(
         "LOT", description="Test type - LOT (leak-off) or FIT (integrity test)"
     )
@@ -399,9 +397,15 @@ class FractureWidthRequest(BaseModel):
         }
     )
 
-    net_pressure: float = Field(..., gt=0, description="Net treating pressure (psi) = Pfrac - σh_min")
-    fracture_height: float = Field(..., gt=0, description="Fracture height (ft), typically ≈ pay thickness")
-    fracture_half_length: float = Field(..., gt=0, description="Fracture half-length (ft), one wing")
+    net_pressure: float = Field(
+        ..., gt=0, description="Net treating pressure (psi) = Pfrac - σh_min"
+    )
+    fracture_height: float = Field(
+        ..., gt=0, description="Fracture height (ft), typically ≈ pay thickness"
+    )
+    fracture_half_length: float = Field(
+        ..., gt=0, description="Fracture half-length (ft), one wing"
+    )
     youngs_modulus: float = Field(..., gt=0, description="Formation Young's modulus (psi)")
     poisson_ratio: float = Field(..., gt=0, lt=0.5, description="Poisson's ratio")
     model: Literal["PKN", "KGD"] = Field("PKN", description="Fracture model")
@@ -432,8 +436,12 @@ class StressPolygonRequest(BaseModel):
     friction_coefficient: float = Field(
         0.6, gt=0, lt=1.5, description="Fault friction coefficient (0.6-0.85 typical)"
     )
-    sigma_h_min: Optional[float] = Field(None, gt=0, description="Actual min horizontal stress to plot (psi)")
-    sigma_h_max: Optional[float] = Field(None, gt=0, description="Actual max horizontal stress to plot (psi)")
+    sigma_h_min: Optional[float] = Field(
+        None, gt=0, description="Actual min horizontal stress to plot (psi)"
+    )
+    sigma_h_max: Optional[float] = Field(
+        None, gt=0, description="Actual max horizontal stress to plot (psi)"
+    )
 
 
 class SandProductionRequest(BaseModel):
@@ -462,7 +470,9 @@ class SandProductionRequest(BaseModel):
     ucs: float = Field(..., gt=0, description="Unconfined compressive strength (psi)")
     cohesion: float = Field(..., ge=0, description="Rock cohesion (psi)")
     friction_angle: float = Field(..., gt=0, lt=90, description="Internal friction angle (degrees)")
-    wellbore_radius: float = Field(0.354, gt=0, description="Wellbore radius (ft) - default 8.5 inch hole")
+    wellbore_radius: float = Field(
+        0.354, gt=0, description="Wellbore radius (ft) - default 8.5 inch hole"
+    )
     perforation_depth: float = Field(0.5, gt=0, description="Perforation tunnel depth (ft)")
     permeability: float = Field(..., gt=0, description="Formation permeability (mD)")
     porosity: float = Field(..., gt=0, lt=1, description="Formation porosity (fraction)")
@@ -490,10 +500,14 @@ class FaultStabilityRequest(BaseModel):
     sigma_3: float = Field(..., gt=0, description="Minimum principal stress (psi)")
     pore_pressure: float = Field(..., gt=0, description="Pore pressure (psi)")
     fault_strike: float = Field(..., ge=0, le=360, description="Fault strike azimuth (degrees)")
-    fault_dip: float = Field(..., gt=0, le=90, description="Fault dip angle (degrees from horizontal)")
+    fault_dip: float = Field(
+        ..., gt=0, le=90, description="Fault dip angle (degrees from horizontal)"
+    )
     sigma_1_azimuth: float = Field(0.0, ge=0, le=360, description="σ1 azimuth (degrees from North)")
     friction_coefficient: float = Field(0.6, gt=0, lt=1.5, description="Fault friction coefficient")
-    cohesion: float = Field(0.0, ge=0, description="Fault cohesion (psi) - typically 0 for reactivation")
+    cohesion: float = Field(
+        0.0, ge=0, description="Fault cohesion (psi) - typically 0 for reactivation"
+    )
 
 
 class DeviatedWellStressRequest(BaseModel):
@@ -518,9 +532,13 @@ class DeviatedWellStressRequest(BaseModel):
     sigma_v: float = Field(..., gt=0, description="Vertical stress (psi)")
     sigma_h_max: float = Field(..., gt=0, description="Maximum horizontal stress (psi)")
     sigma_h_min: float = Field(..., gt=0, description="Minimum horizontal stress (psi)")
-    sigma_h_max_azimuth: float = Field(..., ge=0, le=360, description="σH_max azimuth from North (degrees)")
+    sigma_h_max_azimuth: float = Field(
+        ..., ge=0, le=360, description="σH_max azimuth from North (degrees)"
+    )
     well_azimuth: float = Field(..., ge=0, le=360, description="Well azimuth from North (degrees)")
-    well_inclination: float = Field(..., ge=0, le=90, description="Well inclination from vertical (degrees)")
+    well_inclination: float = Field(
+        ..., ge=0, le=90, description="Well inclination from vertical (degrees)"
+    )
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     mud_weight: float = Field(..., gt=0, description="Drilling fluid density (ppg)")
     depth: float = Field(..., gt=0, description="True vertical depth (ft)")
@@ -544,8 +562,12 @@ class TensileFailureRequest(BaseModel):
     sigma_h_max: float = Field(..., gt=0, description="Maximum horizontal stress (psi)")
     sigma_h_min: float = Field(..., gt=0, description="Minimum horizontal stress (psi)")
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
-    tensile_strength: float = Field(0.0, ge=0, description="Rock tensile strength (psi) - often ~UCS/10")
-    thermal_stress: float = Field(0.0, description="Thermal stress contribution (psi) - negative for cooling")
+    tensile_strength: float = Field(
+        0.0, ge=0, description="Rock tensile strength (psi) - often ~UCS/10"
+    )
+    thermal_stress: float = Field(
+        0.0, description="Thermal stress contribution (psi) - negative for cooling"
+    )
 
 
 class ShearFailureCriteriaRequest(BaseModel):
@@ -571,9 +593,13 @@ class ShearFailureCriteriaRequest(BaseModel):
     ucs: float = Field(..., gt=0, description="Unconfined compressive strength (psi)")
     cohesion: float = Field(..., ge=0, description="Rock cohesion (psi)")
     friction_angle: float = Field(..., gt=0, lt=90, description="Internal friction angle (degrees)")
-    criteria: List[Literal["mohr_coulomb", "drucker_prager", "mogi_coulomb", "modified_lade", "modified_wiebols"]] = Field(
+    criteria: List[
+        Literal[
+            "mohr_coulomb", "drucker_prager", "mogi_coulomb", "modified_lade", "modified_wiebols"
+        ]
+    ] = Field(
         ["mohr_coulomb", "drucker_prager", "mogi_coulomb"],
-        description="List of failure criteria to evaluate"
+        description="List of failure criteria to evaluate",
     )
 
 
@@ -594,10 +620,14 @@ class BreakoutStressInversionRequest(BaseModel):
         }
     )
 
-    breakout_width: float = Field(..., gt=0, lt=180, description="Observed breakout angular width (degrees)")
+    breakout_width: float = Field(
+        ..., gt=0, lt=180, description="Observed breakout angular width (degrees)"
+    )
     sigma_v: float = Field(..., gt=0, description="Vertical stress (psi)")
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
-    mud_weight: float = Field(..., gt=0, description="Drilling fluid density during observation (ppg)")
+    mud_weight: float = Field(
+        ..., gt=0, description="Drilling fluid density during observation (ppg)"
+    )
     ucs: float = Field(..., gt=0, description="Unconfined compressive strength (psi)")
     friction_angle: float = Field(..., gt=0, lt=90, description="Internal friction angle (degrees)")
     depth: float = Field(..., gt=0, description="True vertical depth (ft)")
@@ -623,8 +653,7 @@ class BreakdownPressureRequest(BaseModel):
     pore_pressure: float = Field(..., gt=0, description="Formation pore pressure (psi)")
     tensile_strength: float = Field(0.0, ge=0, description="Rock tensile strength (psi)")
     poroelastic_constant: float = Field(
-        0.0, ge=0, le=1.0,
-        description="Poroelastic constant η = α(1-2ν)/(1-ν), typically 0-0.5"
+        0.0, ge=0, le=1.0, description="Poroelastic constant η = α(1-2ν)/(1-ν), typically 0-0.5"
     )
 
 
@@ -645,15 +674,21 @@ class StressPathRequest(BaseModel):
         }
     )
 
-    initial_pore_pressure: float = Field(..., gt=0, description="Initial formation pore pressure (psi)")
+    initial_pore_pressure: float = Field(
+        ..., gt=0, description="Initial formation pore pressure (psi)"
+    )
     final_pore_pressure: float = Field(..., gt=0, description="Final formation pore pressure (psi)")
-    vertical_stress: float = Field(..., gt=0, description="Vertical stress - assumed constant (psi)")
+    vertical_stress: float = Field(
+        ..., gt=0, description="Vertical stress - assumed constant (psi)"
+    )
     initial_sigma_h: float = Field(..., gt=0, description="Initial horizontal stress (psi)")
     poisson_ratio: float = Field(..., gt=0, lt=0.5, description="Poisson's ratio")
     biot_coefficient: float = Field(1.0, gt=0, le=1, description="Biot coefficient")
     stress_path_coefficient: Optional[float] = Field(
-        None, gt=0, lt=1,
-        description="Stress path coefficient γ = Δσh/ΔPp. If not provided, calculated from ν"
+        None,
+        gt=0,
+        lt=1,
+        description="Stress path coefficient γ = Δσh/ΔPp. If not provided, calculated from ν",
     )
 
 

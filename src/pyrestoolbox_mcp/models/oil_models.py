@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Literal, Union, List, Optional
-import numpy as np
 
 
 class BubblePointRequest(BaseModel):
@@ -21,15 +20,9 @@ class BubblePointRequest(BaseModel):
     )
 
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    rsb: float = Field(
-        ..., ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
-    sg_g: float = Field(
-        0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    rsb: float = Field(..., ge=0, description="Solution GOR at bubble point (scf/stb)")
+    sg_g: float = Field(0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     method: Literal["STAN", "VALMC", "VELAR"] = Field(
         "VALMC", description="Calculation method (VALMC recommended)"
     )
@@ -40,22 +33,12 @@ class SolutionGORRequest(BaseModel):
     """Request model for solution gas-oil ratio calculation."""
 
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
-    sg_g: float = Field(
-        0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
+    sg_g: float = Field(0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     pb: float = Field(0.0, ge=0, description="Bubble point pressure (psia)")
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
-    method: Literal["VELAR", "STAN", "VALMC"] = Field(
-        "VELAR", description="Calculation method"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
+    method: Literal["VELAR", "STAN", "VALMC"] = Field("VELAR", description="Calculation method")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p")
@@ -75,22 +58,14 @@ class OilFVFRequest(BaseModel):
     """Request model for oil formation volume factor calculation."""
 
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
-    sg_g: float = Field(
-        0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
+    sg_g: float = Field(0.0, ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     pb: float = Field(0.0, ge=0, description="Bubble point pressure (psia)")
     rs: Union[float, List[float]] = Field(
         0.0, description="Solution GOR (scf/stb) - scalar or array"
     )
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
     method: Literal["MCAIN", "STAN"] = Field(
         "MCAIN", description="Calculation method (MCAIN recommended)"
     )
@@ -113,19 +88,13 @@ class OilViscosityRequest(BaseModel):
     """Request model for oil viscosity calculation."""
 
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
     pb: float = Field(0.0, ge=0, description="Bubble point pressure (psia)")
     rs: Union[float, List[float]] = Field(
         0.0, description="Solution GOR (scf/stb) - scalar or array"
     )
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
     method: Literal["BR"] = Field("BR", description="Calculation method")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
@@ -145,22 +114,14 @@ class OilViscosityRequest(BaseModel):
 class OilDensityRequest(BaseModel):
     """Request model for oil density calculation."""
 
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
     rs: Union[float, List[float]] = Field(
         ..., description="Solution GOR (scf/stb) - scalar or array"
     )
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
-    bo: Union[float, List[float]] = Field(
-        ..., description="Oil FVF (rb/stb) - scalar or array"
-    )
+    sg_g: float = Field(..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
+    bo: Union[float, List[float]] = Field(..., description="Oil FVF (rb/stb) - scalar or array")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs", "bo")
@@ -179,23 +140,15 @@ class OilDensityRequest(BaseModel):
 class OilCompressibilityRequest(BaseModel):
     """Request model for oil compressibility calculation."""
 
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array"
-    )
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)"
-    )
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
     pb: float = Field(..., ge=0, description="Bubble point pressure (psia)")
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)"
-    )
+    sg_g: float = Field(..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
     rs: Union[float, List[float]] = Field(
         ..., description="Solution GOR (scf/stb) - scalar or array"
     )
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb)"
-    )
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb)")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
     @field_validator("p", "rs")
@@ -234,9 +187,7 @@ class APIConversionRequest(BaseModel):
 class SGConversionRequest(BaseModel):
     """Request model for SG to API conversion."""
 
-    sg: Union[float, List[float]] = Field(
-        ..., description="Specific gravity - scalar or array"
-    )
+    sg: Union[float, List[float]] = Field(..., description="Specific gravity - scalar or array")
 
     @field_validator("sg")
     @classmethod
@@ -271,23 +222,18 @@ class BlackOilTableRequest(BaseModel):
 
     pi: float = Field(..., gt=0, description="Initial reservoir pressure (psia)")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
-    pmax: float = Field(
-        0.0, ge=0, description="Maximum pressure for table (psia, 0=auto)")
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    sg_g: float = Field(..., ge=0, le=3, description="Gas specific gravity (air=1, dimensionless)")
+    pmax: float = Field(0.0, ge=0, description="Maximum pressure for table (psia, 0=auto)")
     pb: float = Field(0.0, ge=0, description="Bubble point pressure (psia, 0=calculate)")
-    rsb: float = Field(
-        0.0, ge=0, description="Solution GOR at bubble point (scf/stb, 0=calculate)")
+    rsb: float = Field(0.0, ge=0, description="Solution GOR at bubble point (scf/stb, 0=calculate)")
     nrows: int = Field(50, gt=0, le=200, description="Number of table rows")
     export: bool = Field(False, description="Export ECLIPSE-compatible files")
     pb_method: Literal["STAN", "VALMC", "VELAR"] = Field(
-        "VALMC", description="Bubble point calculation method")
-    rs_method: Literal["VELAR", "STAN", "VALMC"] = Field(
-        "VELAR", description="Solution GOR method")
-    bo_method: Literal["MCAIN", "STAN"] = Field(
-        "MCAIN", description="Oil FVF method")
+        "VALMC", description="Bubble point calculation method"
+    )
+    rs_method: Literal["VELAR", "STAN", "VALMC"] = Field("VELAR", description="Solution GOR method")
+    bo_method: Literal["MCAIN", "STAN"] = Field("MCAIN", description="Oil FVF method")
     uo_method: Literal["BR"] = Field("BR", description="Oil viscosity method")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
@@ -296,12 +242,9 @@ class EvolvedGasSGRequest(BaseModel):
     """Request model for evolved gas specific gravity calculation."""
 
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
-    degf: float = Field(
-        ..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
-    sg_g: float = Field(
-        ..., ge=0, le=3, description="Separator gas specific gravity")
-    p: Union[float, List[float]] = Field(
-        ..., description="Pressure (psia) - scalar or array")
+    degf: float = Field(..., gt=-460, lt=1000, description="Temperature (degrees Fahrenheit)")
+    sg_g: float = Field(..., ge=0, le=3, description="Separator gas specific gravity")
+    p: Union[float, List[float]] = Field(..., description="Pressure (psia) - scalar or array")
     psep: float = Field(100.0, gt=0, description="Separator pressure (psia)")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
@@ -340,9 +283,7 @@ class TwuPropertiesRequest(BaseModel):
     tb: Optional[Union[float, List[float]]] = Field(
         None, description="Boiling point (degR) - optional"
     )
-    damp: float = Field(
-        0.0, ge=0, le=1, description="Damping factor (0-1)"
-    )
+    damp: float = Field(0.0, ge=0, le=1, description="Damping factor (0-1)")
     metric: bool = Field(False, description="Use metric units (barsa, degC)")
 
 
@@ -359,9 +300,7 @@ class StockTankGORRequest(BaseModel):
     """Request model for stock tank incremental GOR calculation."""
 
     psp: float = Field(..., gt=0, description="Separator pressure (psia)")
-    degf_sp: float = Field(
-        ..., gt=-460, lt=1000, description="Separator temperature (degF)"
-    )
+    degf_sp: float = Field(..., gt=-460, lt=1000, description="Separator temperature (degF)")
     api: float = Field(..., gt=0, le=100, description="Oil API gravity (degrees)")
 
 

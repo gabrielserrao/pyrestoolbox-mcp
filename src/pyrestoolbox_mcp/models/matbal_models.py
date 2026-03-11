@@ -1,21 +1,21 @@
 """Pydantic models for Material Balance calculations."""
 
-from pydantic import BaseModel, Field, field_validator
-from typing import Literal, List, Optional, Dict, Tuple
+from pydantic import BaseModel, Field
+from typing import Literal, List, Optional
 
 
 class GasMatbalRequest(BaseModel):
     """Request model for P/Z gas material balance."""
 
     pressures: List[float] = Field(
-        ..., description="Reservoir pressures at each survey (psia | barsa). First = initial pressure"
+        ...,
+        description="Reservoir pressures at each survey (psia | barsa). First = initial pressure",
     )
     cumulative_gas: List[float] = Field(
-        ..., description="Cumulative gas production at each survey (user units — OGIP in same units)"
+        ...,
+        description="Cumulative gas production at each survey (user units — OGIP in same units)",
     )
-    temperature: float = Field(
-        ..., description="Reservoir temperature (deg F | deg C)"
-    )
+    temperature: float = Field(..., description="Reservoir temperature (deg F | deg C)")
     gas_sg: float = Field(0.65, ge=0.5, le=2.0, description="Gas specific gravity (air=1)")
     co2: float = Field(0.0, ge=0, le=1, description="CO2 mole fraction")
     h2s: float = Field(0.0, ge=0, le=1, description="H2S mole fraction")
@@ -37,7 +37,8 @@ class OilMatbalRequest(BaseModel):
     """Request model for Havlena-Odeh oil material balance."""
 
     pressures: List[float] = Field(
-        ..., description="Reservoir pressures at each survey (psia | barsa). First = initial pressure"
+        ...,
+        description="Reservoir pressures at each survey (psia | barsa). First = initial pressure",
     )
     cumulative_oil: List[float] = Field(
         ..., description="Cumulative oil production (STB | sm3) at each pressure step"
@@ -51,15 +52,9 @@ class OilMatbalRequest(BaseModel):
     producing_gor: Optional[List[float]] = Field(
         None, description="Cumulative producing GOR at each step"
     )
-    cumulative_water: Optional[List[float]] = Field(
-        None, description="Cumulative water production"
-    )
-    water_injection: Optional[List[float]] = Field(
-        None, description="Cumulative water injection"
-    )
-    gas_injection: Optional[List[float]] = Field(
-        None, description="Cumulative gas injection"
-    )
+    cumulative_water: Optional[List[float]] = Field(None, description="Cumulative water production")
+    water_injection: Optional[List[float]] = Field(None, description="Cumulative water injection")
+    gas_injection: Optional[List[float]] = Field(None, description="Cumulative gas injection")
     water_fvf: float = Field(1.0, gt=0, description="Water FVF")
     gas_cap_ratio: float = Field(0.0, ge=0, description="Gas cap ratio m = G*Bgi/(N*Boi)")
     cf: float = Field(0.0, ge=0, description="Formation compressibility (1/psi | 1/bar)")
